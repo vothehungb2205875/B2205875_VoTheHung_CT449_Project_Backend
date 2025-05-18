@@ -1,4 +1,7 @@
-Họ và tên: Võ Thế Hưng
-MSSV: B2205875
-Nhóm HP: CT449-02
-Bài tập Backend phần 1
+# Bài Tập Backend - Phần 1
+
+## Thông tin sinh viên
+
+- **Họ và tên:** Võ Thế Hưng  
+- **MSSV:** B2205875  
+- **Nhóm học phần:** CT449-02
