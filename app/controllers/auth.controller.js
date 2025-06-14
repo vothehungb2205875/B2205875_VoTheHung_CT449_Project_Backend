@@ -3,7 +3,7 @@ const ReaderService = require("../services/reader.service");
 
 exports.handleGoogleCallback = async (req, res) => {
   try {
-    console.log("➡️ req.user:", req.user);
+    console.log("req.user:", req.user);
 
     const readerService = new ReaderService(req.app.locals.dbClient);
     const user = await readerService.createOrFindByGoogle(req.user);
@@ -23,7 +23,7 @@ exports.handleGoogleCallback = async (req, res) => {
       `${process.env.CLIENT_URL}/login/success?token=${token}`
     );
   } catch (error) {
-    console.error("❌ Đăng nhập thất bại:", error);
+    console.error("Đăng nhập thất bại:", error);
     res.status(500).json({ message: "Đăng nhập thất bại", error });
   }
 };

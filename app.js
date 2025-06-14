@@ -34,7 +34,7 @@ app.use("/api/books", booksRouter);
 app.use("/api/readers", readersRouter);
 app.use("/api/publishers", publishersRouter);
 app.use("/api/staffs", staffsRouter);
-app.use("/api/auth", authRouter); // ✅ Đăng nhập Google
+app.use("/api/auth", authRouter);
 
 // Root route
 app.get("/", (req, res) => {

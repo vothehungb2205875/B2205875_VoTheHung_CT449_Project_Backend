@@ -3,6 +3,7 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 require("dotenv").config();
 
 passport.use(
+  // Cấu hình chiến lược Google OAuth 2.0
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,

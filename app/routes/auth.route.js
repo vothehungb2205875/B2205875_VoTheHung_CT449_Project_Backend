@@ -27,10 +27,10 @@ router.get(
       }
 
       req.user = user;
-      next();
+      next(); // Chuyển tiếp đến middleware tiếp theo
     })(req, res, next);
   },
-  authController.handleGoogleCallback
+  authController.handleGoogleCallback // Xử lý callback sau khi xác thực thành công
 );
 
 module.exports = router;

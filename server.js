@@ -6,7 +6,7 @@ async function startServer() {
   try {
     // Kết nối đến cơ sở dữ liệu MongoDB
     const client = await MongoDB.connect(config.db.uri);
-    app.locals.dbClient = client; // 👈 THÊM DÒNG NÀY
+    app.locals.dbClient = client;
 
     console.log("Connected to the database!");
 
