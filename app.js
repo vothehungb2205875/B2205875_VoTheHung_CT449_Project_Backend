@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const cookieParser = require("cookie-parser");
 
 const passport = require("./app/config/passport");
 const authRouter = require("./app/routes/auth.route");
@@ -24,6 +25,7 @@ app.use(
 
 app.use(express.json());
 app.use(passport.initialize());
+app.use(cookieParser());
 
 // Static file for uploads
 const uploadsPath = path.join(__dirname, "app", "uploads");

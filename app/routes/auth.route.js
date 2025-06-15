@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../config/passport");
 const authController = require("../controllers/auth.controller");
+const jwt = require("jsonwebtoken");
 
 // Bắt đầu đăng nhập Google
 router.get(
@@ -32,5 +33,25 @@ router.get(
   },
   authController.handleGoogleCallback // Xử lý callback sau khi xác thực thành công
 );
+
+router.get("/me", (req, res) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) return res.status(401).json({ message: "Chưa đăng nhập" });
+
+    const user = jwt.verify(token, process.env.JWT_SECRET);
+    return res.json(user); // trả về thông tin đã mã hóa
+  } catch (err) {
+    return res.status(401).json({ message: "Token không hợp lệ", err });
+  }
+});
+
+router.post("/register", authController.register);
+router.post("/login", authController.login);
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "Đã đăng xuất" });
+});
 
 module.exports = router;
