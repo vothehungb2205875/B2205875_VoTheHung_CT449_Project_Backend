@@ -61,14 +61,21 @@ exports.register = async (req, res, next) => {
     }
 
     const hashed = await bcrypt.hash(req.body.MatKhau, 10);
-
     const MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
+
+    // ✅ XỬ LÝ AVATAR
+    const avatarFile = req.file;
+    const avatarPath = avatarFile
+      ? `/uploads/avatars/${avatarFile.filename}`
+      : `/uploads/avatars/default.jpg`;
+
     const payload = {
       ...req.body,
       name: `${req.body.HoLot} ${req.body.Ten}`,
       MatKhau: hashed,
       MaDocGia,
       provider: "local",
+      avatar: avatarPath,
     };
 
     const result = await readerService.create(payload);

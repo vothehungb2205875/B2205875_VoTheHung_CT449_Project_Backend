@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("../config/passport");
 const authController = require("../controllers/auth.controller");
 const jwt = require("jsonwebtoken");
+const uploadAvatar = require("../middlewares/upload");
 
 // Bắt đầu đăng nhập Google
 router.get(
@@ -46,7 +47,11 @@ router.get("/me", (req, res) => {
   }
 });
 
-router.post("/register", authController.register);
+router.post(
+  "/register",
+  uploadAvatar.single("avatar"),
+  authController.register
+);
 router.post("/login", authController.login);
 
 router.post("/logout", (req, res) => {
