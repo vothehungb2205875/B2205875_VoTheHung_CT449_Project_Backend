@@ -2,11 +2,12 @@ const jwt = require("jsonwebtoken");
 const ReaderService = require("../services/reader.service");
 const bcrypt = require("bcryptjs");
 const ApiError = require("../api-error");
+const StaffService = require("../services/staff.service");
 
 exports.handleGoogleCallback = async (req, res) => {
   try {
     console.log("req.user:", req.user);
-
+    req.user.MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
     const readerService = new ReaderService(req.app.locals.dbClient);
     const user = await readerService.createOrFindByGoogle(req.user);
 
@@ -63,7 +64,7 @@ exports.register = async (req, res, next) => {
     const hashed = await bcrypt.hash(req.body.MatKhau, 10);
     const MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
 
-    // ✅ XỬ LÝ AVATAR
+    // XỬ LÝ AVATAR
     const avatarFile = req.file;
     const avatarPath = avatarFile
       ? `/uploads/avatars/${avatarFile.filename}`
@@ -98,33 +99,55 @@ exports.login = async (req, res, next) => {
 
   try {
     const readerService = new ReaderService(req.app.locals.dbClient);
+    const staffService = new StaffService(req.app.locals.dbClient);
 
-    // Tìm người dùng theo email và provider = "local"
-    const users = await readerService.find({ email, provider: "local" });
-    const user = users[0];
+    let user = null;
+    let role = null;
 
-    if (!user) {
-      return next(new ApiError(401, "Email hoặc mật khẩu không đúng"));
+    // Ưu tiên kiểm tra nhân viên trước
+    const staff = await staffService.find({ email }); // tìm theo email
+    if (staff.length > 0) {
+      const staffUser = staff[0];
+      const isMatch = await bcrypt.compare(MatKhau, staffUser.Password);
+
+      if (!isMatch) {
+        return next(new ApiError(401, "Email hoặc mật khẩu không đúng"));
+      }
+
+      user = staffUser;
+      role = "staff";
+    } else {
+      // Nếu không phải nhân viên, kiểm tra độc giả
+      const readers = await readerService.find({ email, provider: "local" });
+      if (readers.length === 0) {
+        return next(new ApiError(401, "Email hoặc mật khẩu không đúng"));
+      }
+
+      const readerUser = readers[0];
+      const isMatch = await bcrypt.compare(MatKhau, readerUser.MatKhau);
+
+      if (!isMatch) {
+        return next(new ApiError(401, "Email hoặc mật khẩu không đúng"));
+      }
+
+      user = readerUser;
+      role = "reader";
     }
 
-    // So sánh mật khẩu
-    const isMatch = await bcrypt.compare(MatKhau, user.MatKhau);
-    if (!isMatch) {
-      return next(new ApiError(401, "Email hoặc mật khẩu không đúng"));
-    }
-
-    // Tạo token
+    // Tạo JWT token
     const token = jwt.sign(
       {
         _id: user._id,
         email: user.email,
-        name: user.name,
+        name: user.name || user.HoTenNV,
         avatar: user.avatar,
+        role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
+    // Gửi cookie
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -136,14 +159,13 @@ exports.login = async (req, res, next) => {
       message: "Đăng nhập thành công",
       user: {
         _id: user._id,
-        name: user.name,
+        name: user.name || user.HoTenNV,
         email: user.email,
-        role: user.role || "reader",
-        avatar: user.avatar,
+        role,
       },
     });
   } catch (error) {
-    console.error("Đăng nhập lỗi:", error);
+    console.error("Lỗi đăng nhập:", error);
     return next(new ApiError(500, "Lỗi đăng nhập"));
   }
 };

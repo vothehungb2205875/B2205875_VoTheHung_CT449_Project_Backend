@@ -13,6 +13,7 @@ class StaffService {
       Chucvu: payload.Chucvu,
       Diachi: payload.Diachi,
       SoDienThoai: payload.SoDienThoai,
+      email: payload.email,
     };
 
     Object.keys(staff).forEach(
