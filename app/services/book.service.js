@@ -16,6 +16,8 @@ class BookService {
       MaNXB: payload.MaNXB,
       TacGia: payload.TacGia,
       BiaSach: payload.BiaSach,
+      LuotXem: payload.LuotXem,
+      LinhVuc: payload.LinhVuc,
     };
     Object.keys(book).forEach(
       // Duyệt qua tất cả các khóa trong đối tượng book
@@ -69,7 +71,13 @@ class BookService {
     return result.deletedCount; // Trả về số lượng sách đã xóa
   }
 
-  // Bạn có thể thêm các hàm find, update, delete ở đây luôn
+  async findTopViewed(limit = 4) {
+    return await this.collection
+      .find({})
+      .sort({ LuotXem: -1 })
+      .limit(limit)
+      .toArray();
+  }
 }
 
 module.exports = BookService;
