@@ -17,7 +17,7 @@ class BookService {
       TacGia: payload.TacGia,
       BiaSach: payload.BiaSach,
       LuotXem: payload.LuotXem,
-      LinhVuc: payload.LinhVuc,
+      TheLoai: payload.TheLoai,
     };
     Object.keys(book).forEach(
       // Duyệt qua tất cả các khóa trong đối tượng book
@@ -26,10 +26,11 @@ class BookService {
     return book;
   }
 
-  async create(payload) {
-    // Hàm để thêm một sách mới vào cơ sở dữ liệu
-    const book = this.extractBookData(payload);
-    const result = await this.collection.insertOne(book);
+  async create(payloads) {
+    const books = Array.isArray(payloads)
+      ? payloads.map((item) => this.extractBookData(item))
+      : [this.extractBookData(payloads)];
+    const result = await this.collection.insertMany(books);
     return result;
   }
 
@@ -77,6 +78,9 @@ class BookService {
       .sort({ LuotXem: -1 })
       .limit(limit)
       .toArray();
+  }
+  async findByMaSach(maSach) {
+    return await this.collection.findOne({ MaSach: maSach });
   }
 }
 

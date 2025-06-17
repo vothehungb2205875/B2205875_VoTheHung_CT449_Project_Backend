@@ -3,29 +3,47 @@ const BookService = require("../services/book.service");
 const ApiError = require("../api-error");
 
 exports.create = async (req, res, next) => {
-  if (!req.body?.MaSach) {
-    // Kiểm tra xem MaSach có được cung cấp hay không nếu không trả về undefined
-    return next(new ApiError(400, "Mã sách không được rỗng"));
+  const data = req.body;
+
+  if (!data || (Array.isArray(data) && data.length === 0)) {
+    return next(new ApiError(400, "Dữ liệu sách không được rỗng"));
   }
 
   try {
     const bookService = new BookService(MongoDB.client);
-    const document = await bookService.create(req.body);
-    return res.send(document);
+    const result = await bookService.create(data);
+    return res.send({
+      message: `Đã thêm thành công ${result.insertedCount} sách`,
+      insertedIds: result.insertedIds,
+    });
   } catch (error) {
     return next(new ApiError(500, "Lỗi khi thêm sách"));
   }
 };
 
 exports.findAll = async (req, res, next) => {
-  let documents = [];
-
   try {
+    const { q, genre } = req.query;
+
+    let filter = {};
+    const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    if (q && genre) {
+      filter = {
+        TheLoai: genre,
+        TenSach: { $regex: escapeRegex(q), $options: "i" },
+      };
+    } else if (q) {
+      filter.TenSach = { $regex: escapeRegex(q), $options: "i" };
+    } else if (genre) {
+      filter.TheLoai = genre;
+    }
+
     const bookService = new BookService(MongoDB.client);
-    documents = await bookService.find({});
-    return res.send(documents);
-  } catch (error) {
-    return next(new ApiError(500, "Lỗi khi lấy danh sách sách"));
+    const documents = await bookService.find(filter);
+    res.send(documents);
+  } catch (err) {
+    next(new ApiError(500, "Lỗi tìm sách"));
   }
 };
 

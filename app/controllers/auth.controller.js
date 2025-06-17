@@ -17,6 +17,7 @@ exports.handleGoogleCallback = async (req, res) => {
         email: user.email,
         name: user.name,
         avatar: user.avatar,
+        MaDocGia: user.MaDocGia,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
@@ -37,6 +38,8 @@ exports.handleGoogleCallback = async (req, res) => {
 };
 
 exports.register = async (req, res, next) => {
+  console.log(">>> File upload:", req.file);
+
   const requiredFields = [
     "HoLot",
     "Ten",
@@ -141,6 +144,7 @@ exports.login = async (req, res, next) => {
         email: user.email,
         name: user.name || user.HoTenNV,
         avatar: user.avatar,
+        MaDocGia: user.MaDocGia,
         role,
       },
       process.env.JWT_SECRET,
@@ -161,6 +165,7 @@ exports.login = async (req, res, next) => {
         _id: user._id,
         name: user.name || user.HoTenNV,
         email: user.email,
+        avatar: user.avatar,
         role,
       },
     });

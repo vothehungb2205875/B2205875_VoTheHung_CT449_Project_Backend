@@ -11,6 +11,7 @@ const booksRouter = require("./app/routes/book.route.js");
 const readersRouter = require("./app/routes/reader.route.js");
 const publishersRouter = require("./app/routes/publisher.route.js");
 const staffsRouter = require("./app/routes/staff.route.js");
+const borrowRouter = require("./app/routes/borrow.route.js");
 
 const ApiError = require("./app/api-error.js");
 
@@ -37,6 +38,7 @@ app.use("/api/readers", readersRouter);
 app.use("/api/publishers", publishersRouter);
 app.use("/api/staffs", staffsRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/borrows", borrowRouter);
 
 // Root route
 app.get("/", (req, res) => {
