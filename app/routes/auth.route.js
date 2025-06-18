@@ -41,7 +41,7 @@ router.get("/me", (req, res) => {
     if (!token) return res.status(401).json({ message: "Chưa đăng nhập" });
 
     const user = jwt.verify(token, process.env.JWT_SECRET);
-    return res.json(user); // trả về thông tin đã mã hóa
+    return res.json(user); // gửi thông tin người dùng đã đăng nhập dạng json
   } catch (err) {
     return res.status(401).json({ message: "Token không hợp lệ", err });
   }

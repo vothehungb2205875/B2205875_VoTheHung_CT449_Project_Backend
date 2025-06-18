@@ -38,8 +38,6 @@ exports.handleGoogleCallback = async (req, res) => {
 };
 
 exports.register = async (req, res, next) => {
-  console.log(">>> File upload:", req.file);
-
   const requiredFields = [
     "HoLot",
     "Ten",
@@ -166,6 +164,7 @@ exports.login = async (req, res, next) => {
         name: user.name || user.HoTenNV,
         email: user.email,
         avatar: user.avatar,
+        MaDocGia: user.MaDocGia,
         role,
       },
     });

@@ -75,6 +75,26 @@ class BorrowService {
   async findByBook(maSach) {
     return await this.collection.find({ MaSach: maSach }).toArray();
   }
+
+  // Tìm tất cả lượt mượn của một độc giả kèm thông tin sách
+  async findByReaderWithBooks(maDocGia) {
+    return await this.collection
+      .aggregate([
+        { $match: { MaDocGia: maDocGia } },
+        {
+          $lookup: {
+            from: "books",
+            localField: "MaSach",
+            foreignField: "MaSach",
+            as: "bookInfo",
+          },
+        },
+        { $unwind: { path: "$bookInfo", preserveNullAndEmptyArrays: true } },
+        { $addFields: { bookTitle: "$bookInfo.TenSach" } },
+        { $project: { bookInfo: 0 } },
+      ])
+      .toArray();
+  }
 }
 
 module.exports = BorrowService;

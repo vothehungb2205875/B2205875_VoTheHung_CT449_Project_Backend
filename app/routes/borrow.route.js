@@ -10,7 +10,7 @@ router.get("/:id", borrow.findOne);
 router.put("/:id", borrow.update);
 router.delete("/:id", borrow.delete);
 router.delete("/", borrow.deleteAll);
-router.get("/reader/:maDocGia", borrow.findByReader);
+router.get("/history/:maDocGia", borrow.findByReader);
 router.get("/book/:maSach", borrow.findByBook);
 
 module.exports = router;

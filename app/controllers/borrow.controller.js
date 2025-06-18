@@ -2,6 +2,7 @@ const MongoDB = require("../utils/mongodb.util");
 const BorrowService = require("../services/borrow.service");
 const ApiError = require("../api-error");
 const BookService = require("../services/book.service");
+const ReaderService = require("../services/reader.service");
 
 exports.create = async (req, res, next) => {
   try {
@@ -12,7 +13,31 @@ exports.create = async (req, res, next) => {
     }
 
     const MaDocGia = req.user.MaDocGia;
-    const payload = { MaSach, MaDocGia, NgayMuon, NgayTra };
+    const readerService = new ReaderService(MongoDB.client);
+    const reader = await readerService.find({ MaDocGia });
+    if (
+      !reader.HoLot ||
+      !reader.Ten ||
+      !reader.DienThoai ||
+      !reader.DiaChi ||
+      !reader.NgaySinh ||
+      !reader.Phai
+    ) {
+      return next(
+        new ApiError(
+          400,
+          "Vui lòng cập nhật thông tin độc giả trước khi mượn sách"
+        )
+      );
+    }
+
+    const payload = {
+      MaSach,
+      MaDocGia,
+      NgayMuon,
+      NgayTra,
+      TrangThai: "Đang mượn",
+    };
 
     const bookService = new BookService(MongoDB.client);
     const book = await bookService.findByMaSach(MaSach);
@@ -109,8 +134,10 @@ exports.deleteAll = async (req, res, next) => {
 exports.findByReader = async (req, res, next) => {
   try {
     const borrowService = new BorrowService(MongoDB.client);
-    const documents = await borrowService.findByReader(req.params.maDocGia);
-    return res.send(documents);
+    const result = await borrowService.findByReaderWithBooks(
+      req.params.maDocGia
+    );
+    return res.send(result);
   } catch (error) {
     return next(new ApiError(500, "Lỗi khi tìm theo độc giả"));
   }
