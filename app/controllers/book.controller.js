@@ -1,6 +1,20 @@
 const MongoDB = require("../utils/mongodb.util");
 const BookService = require("../services/book.service");
 const ApiError = require("../api-error");
+const fs = require("fs");
+const path = require("path");
+
+const { customAlphabet } = require("nanoid");
+const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 4);
+
+// Hàm loại bỏ dấu tiếng Việt
+function removeVietnameseDiacritics(str) {
+  return str
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D");
+}
 
 exports.create = async (req, res, next) => {
   let data = req.body;
@@ -17,15 +31,28 @@ exports.create = async (req, res, next) => {
     }
   }
 
+  // Tạo MaSach nếu chưa có
   if (!data.MaSach && data.TenSach) {
-    const letters = data.TenSach.split(" ")
+    const cleanTitle = removeVietnameseDiacritics(data.TenSach);
+    const prefix = cleanTitle
+      .split(" ")
       .filter((word) => word.length > 0)
       .map((word) => word[0].toUpperCase())
+      .slice(0, 3)
       .join("");
-    const unique = Date.now().toString().slice(-4);
-    data.MaSach = letters + unique;
+
+    const now = new Date();
+    const dateCode = `${now.getFullYear().toString().slice(-2)}${(
+      now.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}`;
+    const randomCode = nanoid();
+
+    data.MaSach = `${prefix}-${dateCode}-${randomCode}`;
   }
 
+  // Gán mặc định nếu thiếu
   const fieldsToCheck = [
     "TacGia",
     "TheLoai",
@@ -108,9 +135,6 @@ exports.findTopViewed = async (req, res, next) => {
     return next(new ApiError(500, "Lỗi khi truy xuất sách tiêu biểu"));
   }
 };
-
-const fs = require("fs");
-const path = require("path");
 
 exports.update = async (req, res, next) => {
   try {

@@ -1,5 +1,7 @@
 const express = require("express");
 const readers = require("../controllers/reader.controller.js");
+const deleteReaderAvatar = require("../middlewares/deleteReaderCover");
+const uploadAvatar = require("../middlewares/uploadAvatarCover");
 
 const router = express.Router();
 
@@ -13,10 +15,10 @@ router.get("/", readers.findAll);
 router.get("/:id", readers.findOne);
 
 // Route: Cập nhật bạn đọc theo ID
-router.put("/:id", readers.update);
+router.put("/:id", uploadAvatar.single("avatar"), readers.update);
 
 // Route: Xoá bạn đọc theo ID
-router.delete("/:id", readers.delete);
+router.delete("/:id", deleteReaderAvatar, readers.delete);
 
 // Route: Xoá tất cả bạn đọc
 router.delete("/", readers.deleteAll);

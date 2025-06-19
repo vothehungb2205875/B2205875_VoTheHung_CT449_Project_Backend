@@ -63,13 +63,12 @@ exports.register = async (req, res, next) => {
     }
 
     const hashed = await bcrypt.hash(req.body.MatKhau, 10);
-    const MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
+    const MaDocGia = "DG" + Date.now();
 
-    // XỬ LÝ AVATAR
     const avatarFile = req.file;
     const avatarPath = avatarFile
-      ? `/uploads/avatars/${avatarFile.filename}`
-      : `/uploads/avatars/default.jpg`;
+      ? `uploads/avatars/${avatarFile.filename}`
+      : `uploads/avatars/default.jpg`;
 
     const payload = {
       ...req.body,
@@ -81,10 +80,11 @@ exports.register = async (req, res, next) => {
     };
 
     const result = await readerService.create(payload);
-    return res.status(201).json({
-      message: "Tạo tài khoản thành công",
-      insertedId: result.insertedId,
-    });
+
+    // Lấy lại thông tin độc giả vừa tạo
+    const createdReader = await readerService.findById(result.insertedId);
+
+    return res.status(201).json(createdReader); // Trả về đầy đủ dữ liệu
   } catch (error) {
     console.error(error);
     return next(new ApiError(500, "Lỗi khi tạo tài khoản"));

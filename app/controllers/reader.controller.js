@@ -1,6 +1,8 @@
 const MongoDB = require("../utils/mongodb.util");
 const ReaderService = require("../services/reader.service");
 const ApiError = require("../api-error");
+const fs = require("fs");
+const path = require("path");
 
 exports.create = async (req, res, next) => {
   if (!req.body?.MaDocGia) {
@@ -46,23 +48,37 @@ exports.findOne = async (req, res, next) => {
 };
 
 exports.update = async (req, res, next) => {
-  if (Object.keys(req.body).length === 0) {
-    return next(new ApiError(400, "Dữ liệu cập nhật không được rỗng"));
-  }
-
   try {
     const readerService = new ReaderService(MongoDB.client);
-    const document = await readerService.update(req.params.id, req.body);
-    if (!document) {
-      return next(
-        new ApiError(404, "Không tìm thấy độc giả với ID: " + req.params.id)
-      );
+    const reader = await readerService.findById(req.params.id);
+
+    if (!reader) {
+      return next(new ApiError(404, "Không tìm thấy độc giả"));
     }
-    return res.send({ message: "Cập nhật thành công", document });
-  } catch (error) {
-    return next(
-      new ApiError(500, "Lỗi khi cập nhật độc giả với ID: " + req.params.id)
-    );
+
+    // Xử lý avatar
+    let avatarPath = reader.avatar; // giữ avatar cũ nếu không có file mới
+    if (req.file) {
+      avatarPath = `uploads/avatars/${req.file.filename}`;
+      // Xoá ảnh cũ nếu không phải default
+      if (reader.avatar && reader.avatar !== "uploads/avatars/default.jpg") {
+        const oldPath = path.join(__dirname, "../", reader.avatar);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+    }
+
+    const updateData = {
+      ...req.body,
+      avatar: avatarPath,
+    };
+
+    const updated = await readerService.update(req.params.id, updateData);
+    res.json(updated);
+  } catch (err) {
+    console.error("Lỗi khi cập nhật:", err);
+    return next(new ApiError(500, "Lỗi khi cập nhật độc giả"));
   }
 };
 
