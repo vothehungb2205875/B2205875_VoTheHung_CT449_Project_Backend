@@ -3,20 +3,52 @@ const BookService = require("../services/book.service");
 const ApiError = require("../api-error");
 
 exports.create = async (req, res, next) => {
-  const data = req.body;
+  let data = req.body;
 
   if (!data || (Array.isArray(data) && data.length === 0)) {
     return next(new ApiError(400, "Dữ liệu sách không được rỗng"));
   }
 
+  if (typeof data === "string") {
+    try {
+      data = JSON.parse(data);
+    } catch (e) {
+      return next(new ApiError(400, "Dữ liệu không hợp lệ"));
+    }
+  }
+
+  if (!data.MaSach && data.TenSach) {
+    const letters = data.TenSach.split(" ")
+      .filter((word) => word.length > 0)
+      .map((word) => word[0].toUpperCase())
+      .join("");
+    const unique = Date.now().toString().slice(-4);
+    data.MaSach = letters + unique;
+  }
+
+  const fieldsToCheck = [
+    "TacGia",
+    "TheLoai",
+    "NamXuatBan",
+    "DonGia",
+    "SoQuyen",
+  ];
+  fieldsToCheck.forEach((field) => {
+    if (!data[field] || data[field].toString().trim() === "") {
+      data[field] = "Chờ cập nhật";
+    }
+  });
+
+  if (req.file) {
+    data.BiaSach = `uploads/books/${req.file.filename}`;
+  }
+
   try {
     const bookService = new BookService(MongoDB.client);
-    const result = await bookService.create(data);
-    return res.send({
-      message: `Đã thêm thành công ${result.insertedCount} sách`,
-      insertedIds: result.insertedIds,
-    });
-  } catch (error) {
+    const insertedBook = await bookService.create(data);
+    return res.status(201).json(insertedBook);
+  } catch (err) {
+    console.error("Lỗi khi thêm sách:", err);
     return next(new ApiError(500, "Lỗi khi thêm sách"));
   }
 };
@@ -77,25 +109,45 @@ exports.findTopViewed = async (req, res, next) => {
   }
 };
 
-exports.update = async (req, res, next) => {
-  if (Object.keys(req.body).length === 0) {
-    // Kiểm tra xem có dữ liệu nào trong body không
-    return next(new ApiError(400, "Dữ liệu cập nhật không được rỗng"));
-  }
+const fs = require("fs");
+const path = require("path");
 
+exports.update = async (req, res, next) => {
   try {
+    const id = req.params.id;
+    const updateData = { ...req.body };
+
     const bookService = new BookService(MongoDB.client);
-    const document = await bookService.update(req.params.id, req.body);
-    if (!document) {
-      return next(
-        new ApiError(404, "Không tìm thấy sách với ID: " + req.params.id)
-      );
+    const oldBook = await bookService.findById(id);
+
+    if (!oldBook) {
+      return next(new ApiError(404, "Không tìm thấy sách với ID: " + id));
     }
-    return res.send({ message: "Cập nhật thành công", document });
-  } catch (error) {
-    return next(
-      new ApiError(500, "Lỗi khi cập nhật sách với ID: " + req.params.id)
-    );
+
+    // Nếu có ảnh mới
+    if (req.file) {
+      // Xoá ảnh cũ nếu có
+      if (oldBook.BiaSach) {
+        const oldPath = path.join(__dirname, "../", oldBook.BiaSach);
+        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      }
+
+      // Gán đường dẫn ảnh mới
+      updateData.BiaSach = `uploads/books/${req.file.filename}`;
+    }
+
+    const result = await bookService.update(id, updateData);
+
+    if (!result) {
+      return next(new ApiError(500, "Không thể cập nhật sách"));
+    }
+
+    // Trả về sách đã cập nhật
+    const updatedBook = await bookService.findById(id);
+    return res.send({ message: "Cập nhật thành công", document: updatedBook });
+  } catch (err) {
+    console.error("Lỗi khi cập nhật sách:", err);
+    return next(new ApiError(500, "Lỗi khi cập nhật sách"));
   }
 };
 

@@ -3,7 +3,7 @@ const router = express.Router();
 const passport = require("../config/passport");
 const authController = require("../controllers/auth.controller");
 const jwt = require("jsonwebtoken");
-const uploadAvatar = require("../middlewares/upload");
+const uploadAvatar = require("../middlewares/uploadAvatarCover");
 
 // Bắt đầu đăng nhập Google
 router.get(

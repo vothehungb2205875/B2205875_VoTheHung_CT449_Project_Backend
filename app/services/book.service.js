@@ -26,12 +26,10 @@ class BookService {
     return book;
   }
 
-  async create(payloads) {
-    const books = Array.isArray(payloads)
-      ? payloads.map((item) => this.extractBookData(item))
-      : [this.extractBookData(payloads)];
-    const result = await this.collection.insertMany(books);
-    return result;
+  async create(payload) {
+    const book = this.extractBookData(payload);
+    const result = await this.collection.insertOne(book);
+    return { _id: result.insertedId, ...book };
   }
 
   async find(filter) {
