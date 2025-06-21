@@ -105,6 +105,10 @@ class ReaderService {
     const result = await this.collection.deleteMany({});
     return result.deletedCount;
   }
+
+  async findByMaDocGia(MaDocGia) {
+    return await this.collection.findOne({ MaDocGia });
+  }
 }
 
 module.exports = ReaderService;

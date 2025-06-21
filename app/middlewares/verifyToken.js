@@ -14,6 +14,9 @@ function verifyToken(req, res, next) {
 
     next();
   } catch (err) {
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Phiên đăng nhập đã hết hạn" });
+    }
     return res.status(403).json({ message: "Token không hợp lệ" });
   }
 }

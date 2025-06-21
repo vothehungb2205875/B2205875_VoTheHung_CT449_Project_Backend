@@ -9,8 +9,8 @@ class BorrowService {
     const borrow = {
       MaDocGia: payload.MaDocGia,
       MaSach: payload.MaSach,
-      NgayMuon: payload.NgayMuon ? new Date(payload.NgayMuon) : new Date(),
-      NgayTra: payload.NgayTra ? new Date(payload.NgayTra) : null,
+      NgayMuon: payload.NgayMuon,
+      NgayTra: payload.NgayTra,
       TrangThai: payload.TrangThai,
     };
 
