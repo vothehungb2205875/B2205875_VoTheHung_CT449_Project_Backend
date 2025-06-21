@@ -26,5 +26,8 @@ router.put("/:id", uploadAvatar.single("avatar"), readers.update);
 // Route: Xoá bạn đọc theo ID
 router.delete("/:id", deleteReaderAvatar, readers.delete);
 
+// Tìm theo mã
+router.get("/ma/:MaDocGia", readers.findByMa);
+
 // Xuất router để dùng trong app chính
 module.exports = router;

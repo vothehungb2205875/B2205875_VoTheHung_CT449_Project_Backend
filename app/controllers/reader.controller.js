@@ -121,3 +121,15 @@ exports.statistic = async (req, res, next) => {
     return next(new ApiError(500, "Không thể thống kê độc giả"));
   }
 };
+
+exports.findByMa = async (req, res) => {
+  try {
+    const readerService = new ReaderService(MongoDB.client);
+    const reader = await readerService.findByMaDocGia(req.params.MaDocGia);
+    if (!reader)
+      return res.status(404).json({ message: "Không tìm thấy độc giả" });
+    res.json(reader);
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi truy vấn", error: err });
+  }
+};
