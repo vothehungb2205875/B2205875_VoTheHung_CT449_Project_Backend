@@ -95,6 +95,18 @@ class BorrowService {
       ])
       .toArray();
   }
+
+  async getStatistic(month, year) {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 1);
+
+    return await this.collection.countDocuments({
+      NgayMuon: {
+        $gte: start,
+        $lt: end,
+      },
+    });
+  }
 }
 
 module.exports = BorrowService;

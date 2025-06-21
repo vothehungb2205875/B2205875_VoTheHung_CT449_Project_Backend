@@ -8,6 +8,7 @@ exports.handleGoogleCallback = async (req, res) => {
   try {
     console.log("req.user:", req.user);
     req.user.MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
+    req.user.createdAt = new Date();
     const readerService = new ReaderService(req.app.locals.dbClient);
     const user = await readerService.createOrFindByGoogle(req.user);
 
@@ -77,6 +78,7 @@ exports.register = async (req, res, next) => {
       MaDocGia,
       provider: "local",
       avatar: avatarPath,
+      createdAt: new Date(),
     };
 
     const result = await readerService.create(payload);

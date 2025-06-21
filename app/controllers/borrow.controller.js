@@ -190,3 +190,20 @@ exports.findByBook = async (req, res, next) => {
     return next(new ApiError(500, "Lỗi khi tìm theo sách"));
   }
 };
+
+exports.statistic = async (req, res, next) => {
+  try {
+    const borrowService = new BorrowService(MongoDB.client);
+
+    const today = new Date();
+    const month = parseInt(req.query.month) || today.getMonth() + 1;
+    const year = parseInt(req.query.year) || today.getFullYear();
+
+    const count = await borrowService.getStatistic(month, year);
+
+    res.json({ month, year, count });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi khi thống kê lượt mượn" });
+  }
+};

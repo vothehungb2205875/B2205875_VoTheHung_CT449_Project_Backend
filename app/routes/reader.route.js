@@ -11,6 +11,12 @@ router.post("/", readers.create);
 // Route: Lấy tất cả bạn đọc
 router.get("/", readers.findAll);
 
+// Route: Thống kê
+router.get("/statistic", readers.statistic);
+
+// Route: Xoá tất cả bạn đọc
+router.delete("/", readers.deleteAll);
+
 // Route: Lấy 1 bạn đọc theo ID
 router.get("/:id", readers.findOne);
 
@@ -19,9 +25,6 @@ router.put("/:id", uploadAvatar.single("avatar"), readers.update);
 
 // Route: Xoá bạn đọc theo ID
 router.delete("/:id", deleteReaderAvatar, readers.delete);
-
-// Route: Xoá tất cả bạn đọc
-router.delete("/", readers.deleteAll);
 
 // Xuất router để dùng trong app chính
 module.exports = router;

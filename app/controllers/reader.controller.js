@@ -110,3 +110,14 @@ exports.deleteAll = async (req, res, next) => {
     return next(new ApiError(500, "Lỗi khi xoá tất cả độc giả"));
   }
 };
+
+exports.statistic = async (req, res, next) => {
+  try {
+    const readerService = new ReaderService(MongoDB.client);
+    const result = await readerService.getStatistics(); // gọi service mới thêm
+    return res.send(result);
+  } catch (error) {
+    console.error("Lỗi thống kê độc giả:", error);
+    return next(new ApiError(500, "Không thể thống kê độc giả"));
+  }
+};

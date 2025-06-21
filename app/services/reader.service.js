@@ -15,6 +15,7 @@ class ReaderService {
       Phai: payload.Phai,
       DiaChi: payload.DiaChi,
       DienThoai: payload.DienThoai,
+      createdAt: new Date(),
 
       // Đăng nhập truyền thống
       MatKhau: payload.MatKhau,
@@ -106,8 +107,25 @@ class ReaderService {
     return result.deletedCount;
   }
 
+  // Tìm theo mã
   async findByMaDocGia(MaDocGia) {
     return await this.collection.findOne({ MaDocGia });
+  }
+
+  // Thống kê
+  async getStatistics() {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const totalReaders = await this.collection.countDocuments({});
+    const newReadersThisMonth = await this.collection.countDocuments({
+      createdAt: { $gte: startOfMonth },
+    });
+
+    return {
+      totalReaders,
+      newReadersThisMonth,
+    };
   }
 }
 
