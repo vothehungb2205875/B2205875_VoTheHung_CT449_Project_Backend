@@ -11,6 +11,7 @@ class BorrowService {
       MaSach: payload.MaSach,
       NgayMuon: payload.NgayMuon ? new Date(payload.NgayMuon) : undefined,
       NgayTra: payload.NgayTra ? new Date(payload.NgayTra) : undefined,
+      NgayTraTT: payload.NgayTra,
       TrangThai: payload.TrangThai,
     };
 

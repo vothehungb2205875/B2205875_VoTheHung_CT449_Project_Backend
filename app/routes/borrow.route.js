@@ -9,8 +9,8 @@ router.get("/", borrow.findAll);
 router.get("/statistic", borrow.statistic);
 router.get("/:id", borrow.findOne);
 router.put("/:id", verifyToken, borrow.update);
-router.delete("/:id", borrow.delete);
-router.delete("/", borrow.deleteAll);
+router.delete("/:id", verifyToken, borrow.delete);
+router.delete("/", verifyToken, borrow.deleteAll);
 router.get("/history/:maDocGia", borrow.findByReader);
 router.get("/book/:maSach", borrow.findByBook);
 

@@ -3,29 +3,47 @@ const books = require("../controllers/book.controller.js");
 const uploadBookCover = require("../middlewares/uploadBookCover");
 const deleteBookCover = require("../middlewares/deleteBookCover");
 const isStaff = require("../middlewares/isStaff");
+const {
+  validateCreateBook,
+  validateUpdateBook,
+} = require("../validators/book.validator");
+const { handleValidationErrors } = require("../middlewares/validate");
 
 const router = express.Router();
 
 // Thêm sách mới (chỉ staff được phép)
-router.post("/", isStaff, uploadBookCover.single("BiaSach"), books.create);
+router.post(
+  "/",
+  isStaff,
+  uploadBookCover.single("BiaSach"),
+  validateCreateBook,
+  handleValidationErrors,
+  books.create
+);
 
-// Route: Lấy tất cả sách
+// Lấy tất cả sách
 router.get("/", books.findAll);
 
-// Route: Lấy sách tiêu biểu (top viewed)
+// Lấy sách tiêu biểu
 router.get("/top", books.findTopViewed);
 
-// Route: Lấy 1 sách theo ID
+// Lấy một sách theo ID
 router.get("/:id", books.findOne);
 
-// Cập nhật sách theo ID
-router.put("/:id", isStaff, uploadBookCover.single("BiaSach"), books.update);
+// Cập nhật sách theo ID (chỉ staff)
+router.put(
+  "/:id",
+  isStaff,
+  uploadBookCover.single("BiaSach"),
+  validateUpdateBook,
+  handleValidationErrors,
+  books.update
+);
 
-// Xoá sách theo ID
+// Xoá sách theo ID (chỉ staff)
 router.delete("/:id", isStaff, deleteBookCover, books.delete);
 
-// Xoá tất cả sách
+// Xoá tất cả sách (chỉ staff)
 router.delete("/", isStaff, books.deleteAll);
 
-// Xuất router để dùng trong app chính
 module.exports = router;

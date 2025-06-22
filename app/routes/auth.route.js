@@ -4,6 +4,16 @@ const passport = require("../config/passport");
 const authController = require("../controllers/auth.controller");
 const jwt = require("jsonwebtoken");
 const uploadAvatar = require("../middlewares/uploadAvatarCover");
+const { validateRegister } = require("../validators/auth.validator");
+const { handleValidationErrors } = require("../middlewares/validate");
+
+router.post(
+  "/register",
+  uploadAvatar.single("avatar"),
+  validateRegister,
+  handleValidationErrors,
+  authController.register
+);
 
 // Bắt đầu đăng nhập Google
 router.get(
@@ -50,8 +60,11 @@ router.get("/me", (req, res) => {
 router.post(
   "/register",
   uploadAvatar.single("avatar"),
+  validateRegister,
+  handleValidationErrors,
   authController.register
 );
+
 router.post("/login", authController.login);
 
 router.post("/logout", (req, res) => {

@@ -50,17 +50,28 @@ exports.findOne = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const readerService = new ReaderService(MongoDB.client);
-    const reader = await readerService.findById(req.params.id);
+    const readerId = req.params.id;
+    const currentUserId = req.user._id;
+    const currentUserRole = req.user.role;
 
+    // Ngăn sửa người khác nếu không phải admin
+    if (readerId !== currentUserId && currentUserRole !== "staff") {
+      return res
+        .status(403)
+        .json({ message: "Bạn không có quyền sửa thông tin người khác" });
+    }
+
+    const reader = await readerService.findById(readerId);
     if (!reader) {
       return next(new ApiError(404, "Không tìm thấy độc giả"));
     }
 
     // Xử lý avatar
-    let avatarPath = reader.avatar; // giữ avatar cũ nếu không có file mới
+    let avatarPath = reader.avatar || "uploads/avatars/default.jpg";
+
     if (req.file) {
       avatarPath = `uploads/avatars/${req.file.filename}`;
-      // Xoá ảnh cũ nếu không phải default
+
       if (reader.avatar && reader.avatar !== "uploads/avatars/default.jpg") {
         const oldPath = path.join(__dirname, "../", reader.avatar);
         if (fs.existsSync(oldPath)) {
@@ -69,12 +80,23 @@ exports.update = async (req, res, next) => {
       }
     }
 
-    const updateData = {
-      ...req.body,
-      avatar: avatarPath,
-    };
+    const allowedFields = [
+      "HoLot",
+      "Ten",
+      "NgaySinh",
+      "Phai",
+      "DiaChi",
+      "DienThoai",
+    ];
+    const updateData = { avatar: avatarPath };
 
-    const updated = await readerService.update(req.params.id, updateData);
+    for (const field of allowedFields) {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    }
+
+    const updated = await readerService.update(readerId, updateData);
     res.json(updated);
   } catch (err) {
     console.error("Lỗi khi cập nhật:", err);

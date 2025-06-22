@@ -132,6 +132,11 @@ exports.update = async (req, res, next) => {
       }
     }
 
+    // Thêm ngày trả thực tế nếu trạng thái là "Đã trả"
+    if (req.body.TrangThai === "Đã trả") {
+      req.body.NgayTraTT = new Date();
+    }
+
     // Cập nhật lượt mượn
     const document = await borrowService.update(req.params.id, req.body);
 

@@ -52,20 +52,7 @@ exports.create = async (req, res, next) => {
     data.MaSach = `${prefix}-${dateCode}-${randomCode}`;
   }
 
-  // Gán mặc định nếu thiếu
-  const fieldsToCheck = [
-    "TacGia",
-    "TheLoai",
-    "NamXuatBan",
-    "DonGia",
-    "SoQuyen",
-  ];
-  fieldsToCheck.forEach((field) => {
-    if (!data[field] || data[field].toString().trim() === "") {
-      data[field] = "Chờ cập nhật";
-    }
-  });
-
+  // Gán đường dẫn ảnh nếu có file
   if (req.file) {
     data.BiaSach = `uploads/books/${req.file.filename}`;
   }
@@ -139,34 +126,45 @@ exports.findTopViewed = async (req, res, next) => {
 exports.update = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const updateData = { ...req.body };
+    let updateData = { ...req.body };
 
     const bookService = new BookService(MongoDB.client);
     const oldBook = await bookService.findById(id);
 
     if (!oldBook) {
-      return next(new ApiError(404, "Không tìm thấy sách với ID: " + id));
+      return next(new ApiError(404, `Không tìm thấy sách với ID: ${id}`));
     }
+
+    // Danh sách các trường được phép cập nhật
+    const allowedFields = [
+      "TenSach",
+      "TacGia",
+      "TheLoai",
+      "MaNXB",
+      "DonGia",
+      "SoQuyen",
+      "NamXuatBan",
+    ];
+    updateData = allowedFields.reduce((obj, key) => {
+      if (updateData[key] !== undefined) obj[key] = updateData[key];
+      return obj;
+    }, {});
 
     // Nếu có ảnh mới
     if (req.file) {
-      // Xoá ảnh cũ nếu có
       if (oldBook.BiaSach) {
-        const oldPath = path.join(__dirname, "../", oldBook.BiaSach);
+        const oldPath = path.resolve(__dirname, "../", oldBook.BiaSach);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
       }
 
-      // Gán đường dẫn ảnh mới
       updateData.BiaSach = `uploads/books/${req.file.filename}`;
     }
 
     const result = await bookService.update(id, updateData);
-
     if (!result) {
       return next(new ApiError(500, "Không thể cập nhật sách"));
     }
 
-    // Trả về sách đã cập nhật
     const updatedBook = await bookService.findById(id);
     return res.send({ message: "Cập nhật thành công", document: updatedBook });
   } catch (err) {

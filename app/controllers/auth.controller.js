@@ -39,43 +39,59 @@ exports.handleGoogleCallback = async (req, res) => {
 };
 
 exports.register = async (req, res, next) => {
-  const requiredFields = [
-    "HoLot",
-    "Ten",
-    "email",
-    "MatKhau",
-    "NgaySinh",
-    "Phai",
-    "DiaChi",
-    "DienThoai",
-  ];
-  for (const field of requiredFields) {
-    if (!req.body[field]) {
-      return next(new ApiError(400, `Thiếu trường bắt buộc: ${field}`));
+  const { HoLot, Ten, email, MatKhau, NgaySinh, Phai, DiaChi, DienThoai } =
+    req.body;
+
+  // Kiểm tra các trường bắt buộc
+  const requiredFields = {
+    HoLot,
+    Ten,
+    email,
+    MatKhau,
+    NgaySinh,
+    Phai,
+    DiaChi,
+    DienThoai,
+  };
+  for (const [key, value] of Object.entries(requiredFields)) {
+    if (!value) {
+      return next(new ApiError(400, `Thiếu trường bắt buộc: ${key}`));
     }
   }
 
   try {
     const readerService = new ReaderService(req.app.locals.dbClient);
 
-    const existed = await readerService.find({ email: req.body.email });
+    // Kiểm tra email đã tồn tại chưa
+    const existed = await readerService.find({ email });
     if (existed.length > 0) {
       return next(new ApiError(409, "Email đã tồn tại"));
     }
 
-    const hashed = await bcrypt.hash(req.body.MatKhau, 10);
+    // Băm mật khẩu
+    const hashedPassword = await bcrypt.hash(MatKhau, 10);
+
+    // Sinh mã độc giả
     const MaDocGia = "DG" + Date.now();
 
+    // Xử lý avatar
     const avatarFile = req.file;
     const avatarPath = avatarFile
       ? `uploads/avatars/${avatarFile.filename}`
-      : `uploads/avatars/default.jpg`;
+      : "uploads/avatars/default.jpg";
 
+    // Tạo payload đầy đủ để lưu vào DB
     const payload = {
-      ...req.body,
-      name: `${req.body.HoLot} ${req.body.Ten}`,
-      MatKhau: hashed,
+      HoLot,
+      Ten,
+      email,
+      MatKhau: hashedPassword,
+      NgaySinh,
+      Phai,
+      DiaChi,
+      DienThoai,
       MaDocGia,
+      name: `${HoLot} ${Ten}`,
       provider: "local",
       avatar: avatarPath,
       createdAt: new Date(),
@@ -83,12 +99,11 @@ exports.register = async (req, res, next) => {
 
     const result = await readerService.create(payload);
 
-    // Lấy lại thông tin độc giả vừa tạo
     const createdReader = await readerService.findById(result.insertedId);
 
-    return res.status(201).json(createdReader); // Trả về đầy đủ dữ liệu
+    return res.status(201).json(createdReader);
   } catch (error) {
-    console.error(error);
+    console.error("Lỗi khi tạo tài khoản:", error);
     return next(new ApiError(500, "Lỗi khi tạo tài khoản"));
   }
 };
