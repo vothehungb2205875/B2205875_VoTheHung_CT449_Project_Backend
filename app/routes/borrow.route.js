@@ -1,10 +1,18 @@
 const express = require("express");
 const borrow = require("../controllers/borrow.controller");
 const verifyToken = require("../middlewares/verifyToken");
+const { handleValidationErrors } = require("../middlewares/validate");
+const borrowValidator = require("../validators/borrow.validator");
 
 const router = express.Router();
 
-router.post("/", verifyToken, borrow.create);
+router.post(
+  "/",
+  verifyToken,
+  borrowValidator,
+  handleValidationErrors,
+  borrow.create
+);
 router.get("/", borrow.findAll);
 router.get("/statistic", borrow.statistic);
 router.get("/:id", borrow.findOne);
