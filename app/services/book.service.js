@@ -32,10 +32,12 @@ class BookService {
     return { _id: result.insertedId, ...book };
   }
 
-  async find(filter) {
-    // Hàm để tìm sách theo bộ lọc
-    const cursor = await this.collection.find(filter);
-    return await cursor.toArray(); // Chuyển đổi kết quả tìm kiếm thành mảng
+  async count(filter = {}) {
+    return await this.collection.countDocuments(filter);
+  }
+
+  async find(filter = {}, skip = 0, limit = 12) {
+    return await this.collection.find(filter).skip(skip).limit(limit).toArray();
   }
 
   async findById(id) {

@@ -69,11 +69,13 @@ exports.create = async (req, res, next) => {
 
 exports.findAll = async (req, res, next) => {
   try {
-    const { q, genre } = req.query;
+    const { q, genre, page = 1, limit = 12 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    let filter = {};
     const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+    // Tạo filter
+    let filter = {};
     if (q && genre) {
       filter = {
         TheLoai: genre,
@@ -85,9 +87,12 @@ exports.findAll = async (req, res, next) => {
       filter.TheLoai = genre;
     }
 
+    // Gọi Service
     const bookService = new BookService(MongoDB.client);
-    const documents = await bookService.find(filter);
-    res.send(documents);
+    const total = await bookService.count(filter); // tổng số kết quả
+    const data = await bookService.find(filter, skip, parseInt(limit)); // dữ liệu phân trang
+
+    res.send({ data, total });
   } catch (err) {
     next(new ApiError(500, "Lỗi tìm sách"));
   }

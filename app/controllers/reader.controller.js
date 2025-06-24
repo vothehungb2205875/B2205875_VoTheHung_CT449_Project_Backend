@@ -19,14 +19,32 @@ exports.create = async (req, res, next) => {
 };
 
 exports.findAll = async (req, res, next) => {
-  let documents = [];
-
   try {
+    const { q, page = 1, limit = 5 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const regex = q
+      ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+      : null;
+    const filter = q
+      ? {
+          $or: [
+            { MaDocGia: regex },
+            { HoLot: regex },
+            { Ten: regex },
+            { email: regex },
+            { DienThoai: regex },
+          ],
+        }
+      : {};
+
     const readerService = new ReaderService(MongoDB.client);
-    documents = await readerService.find({});
-    return res.send(documents);
-  } catch (error) {
-    return next(new ApiError(500, "Lỗi khi lấy danh sách độc giả"));
+    const total = await readerService.count(filter);
+    const data = await readerService.find(filter, skip, parseInt(limit));
+
+    res.send({ data, total });
+  } catch (err) {
+    next(new ApiError(500, "Lỗi tìm độc giả"));
   }
 };
 

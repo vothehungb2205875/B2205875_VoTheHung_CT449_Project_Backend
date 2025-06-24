@@ -30,9 +30,12 @@ class BorrowService {
   }
 
   // Lấy tất cả lượt mượn
-  async find(filter = {}) {
-    const cursor = await this.collection.find(filter);
-    return await cursor.toArray();
+  async count(filter = {}) {
+    return await this.collection.countDocuments(filter);
+  }
+
+  async find(filter = {}, skip = 0, limit = 5) {
+    return await this.collection.find(filter).skip(skip).limit(limit).toArray();
   }
 
   // Lấy theo ID (giả định _id MongoDB)

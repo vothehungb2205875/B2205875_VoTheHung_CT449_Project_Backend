@@ -64,10 +64,13 @@ class ReaderService {
     return await this.collection.findOne({ _id: result.insertedId });
   }
 
+  async count(filter = {}) {
+    return await this.collection.countDocuments(filter);
+  }
+
   // Tìm theo filter bất kỳ
-  async find(filter) {
-    const cursor = await this.collection.find(filter);
-    return await cursor.toArray();
+  async find(filter = {}, skip = 0, limit = 5) {
+    return await this.collection.find(filter).skip(skip).limit(limit).toArray();
   }
 
   // Tìm theo _id MongoDB

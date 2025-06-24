@@ -44,6 +44,30 @@ exports.create = async (req, res, next) => {
       );
     }
 
+    // Kiểm tra nếu đã có 3 lượt mượn chưa trả
+    const borrowService = new BorrowService(MongoDB.client);
+    const borrowHistory = await borrowService.findByReaderWithBooks(MaDocGia);
+
+    // Đếm số lượt có trạng thái "Đang mượn"
+    const activeCount = borrowHistory.filter(
+      (b) => b.TrangThai === "Đang mượn"
+    ).length;
+
+    if (activeCount >= 3) {
+      return next(
+        new ApiError(400, "Bạn đã có 3 sách đang mượn. Không thể mượn thêm.")
+      );
+    }
+
+    if (activeCount.length >= 3) {
+      return next(
+        new ApiError(
+          400,
+          "Bạn đã có 3 lượt mượn chưa trả. Không thể mượn thêm."
+        )
+      );
+    }
+
     // Kiểm tra tồn tại sách
     const bookService = new BookService(MongoDB.client);
     const book = await bookService.findByMaSach(MaSach);
@@ -63,7 +87,6 @@ exports.create = async (req, res, next) => {
     });
 
     // Tạo bản ghi mượn
-    const borrowService = new BorrowService(MongoDB.client);
     const result = await borrowService.create({
       MaSach,
       MaDocGia,
@@ -82,11 +105,27 @@ exports.create = async (req, res, next) => {
 // Lấy tất cả lượt mượn
 exports.findAll = async (req, res, next) => {
   try {
+    const { q, page = 1, limit = 5 } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const regex = q
+      ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
+      : null;
+
+    let filter = {};
+    if (q) {
+      filter = {
+        $or: [{ MaDocGia: regex }, { MaSach: regex }, { TrangThai: regex }],
+      };
+    }
+
     const borrowService = new BorrowService(MongoDB.client);
-    const documents = await borrowService.find();
-    return res.send(documents);
-  } catch (error) {
-    return next(new ApiError(500, "Không thể lấy danh sách mượn sách"));
+    const total = await borrowService.count(filter);
+    const data = await borrowService.find(filter, skip, parseInt(limit));
+
+    res.send({ data, total });
+  } catch (err) {
+    next(new ApiError(500, "Lỗi tìm mượn sách"));
   }
 };
 
