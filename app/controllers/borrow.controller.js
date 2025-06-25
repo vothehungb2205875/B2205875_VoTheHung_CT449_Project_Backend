@@ -50,7 +50,7 @@ exports.create = async (req, res, next) => {
 
     // Đếm số lượt có trạng thái "Đang mượn"
     const activeCount = borrowHistory.filter(
-      (b) => b.TrangThai === "Đang mượn"
+      (b) => b.TrangThai === "Đang mượn" || b.TrangThai === "Đăng ký mượn"
     ).length;
 
     if (activeCount >= 3) {
@@ -63,7 +63,7 @@ exports.create = async (req, res, next) => {
       return next(
         new ApiError(
           400,
-          "Bạn đã có 3 lượt mượn chưa trả. Không thể mượn thêm."
+          "Bạn đã có 3 lượt mượn/đăng ký chưa trả. Không thể mượn thêm."
         )
       );
     }
@@ -92,7 +92,7 @@ exports.create = async (req, res, next) => {
       MaDocGia,
       NgayMuon,
       NgayTra,
-      TrangThai: "Đang mượn",
+      TrangThai: "Đăng ký mượn",
     });
 
     return res.status(201).json({ message: "Mượn sách thành công", result });
@@ -105,18 +105,34 @@ exports.create = async (req, res, next) => {
 // Lấy tất cả lượt mượn
 exports.findAll = async (req, res, next) => {
   try {
-    const { q, page = 1, limit = 5 } = req.query;
+    const { q, page = 1, limit = 5, startDate, endDate, status } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
-
     const regex = q
       ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
       : null;
 
     let filter = {};
+
+    // Tìm kiếm theo từ khóa q
     if (q) {
-      filter = {
-        $or: [{ MaDocGia: regex }, { MaSach: regex }, { TrangThai: regex }],
+      filter.$or = [
+        { MaDocGia: regex },
+        { MaSach: regex },
+        { TrangThai: regex },
+      ];
+    }
+
+    // Lọc theo khoảng thời gian mượn
+    if (startDate && endDate) {
+      filter.NgayMuon = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
       };
+    }
+
+    // Lọc theo trạng thái
+    if (status) {
+      filter.TrangThai = status;
     }
 
     const borrowService = new BorrowService(MongoDB.client);
@@ -125,6 +141,7 @@ exports.findAll = async (req, res, next) => {
 
     res.send({ data, total });
   } catch (err) {
+    console.error("Lỗi tìm mượn sách:", err);
     next(new ApiError(500, "Lỗi tìm mượn sách"));
   }
 };
@@ -235,6 +252,7 @@ exports.findByBook = async (req, res, next) => {
   }
 };
 
+// Thống kê
 exports.statistic = async (req, res, next) => {
   try {
     const borrowService = new BorrowService(MongoDB.client);
