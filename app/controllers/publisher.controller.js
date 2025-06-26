@@ -9,6 +9,12 @@ exports.create = async (req, res, next) => {
 
   try {
     const publisherService = new PublisherService(MongoDB.client);
+
+    const existed = await publisherService.findByMaNXB(req.body.MaNXB);
+    if (existed) {
+      return next(new ApiError(400, "Mã nhà xuất bản đã tồn tại"));
+    }
+
     const document = await publisherService.create(req.body);
     return res.send(document);
   } catch (error) {
@@ -19,8 +25,19 @@ exports.create = async (req, res, next) => {
 exports.findAll = async (req, res, next) => {
   try {
     const publisherService = new PublisherService(MongoDB.client);
-    const documents = await publisherService.find({});
-    return res.send(documents);
+    const { q, page = 1, limit = 5 } = req.query;
+
+    const condition = q ? { TenNXB: { $regex: new RegExp(q, "i") } } : {};
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await publisherService.count(condition);
+    const data = await publisherService.findWithPagination(
+      condition,
+      skip,
+      parseInt(limit)
+    );
+
+    return res.send({ data, total });
   } catch (error) {
     return next(new ApiError(500, "Lỗi khi lấy danh sách nhà xuất bản"));
   }

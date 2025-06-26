@@ -20,23 +20,31 @@ exports.create = async (req, res, next) => {
 
 exports.findAll = async (req, res, next) => {
   try {
-    const { q, page = 1, limit = 5 } = req.query;
+    const { q, page = 1, limit = 5, TrangThai } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const regex = q
       ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
       : null;
-    const filter = q
-      ? {
-          $or: [
-            { MaDocGia: regex },
-            { HoLot: regex },
-            { Ten: regex },
-            { email: regex },
-            { DienThoai: regex },
-          ],
-        }
-      : {};
+
+    let filter = {};
+
+    if (q) {
+      filter.$or = [
+        { MaDocGia: regex },
+        { HoLot: regex },
+        { Ten: regex },
+        { email: regex },
+        { DienThoai: regex },
+      ];
+    }
+
+    if (TrangThai) {
+      filter.TrangThai = TrangThai;
+    } else {
+      // Mặc định: chỉ lấy những người hoạt động nếu không có tham số
+      filter.TrangThai = { $ne: "Vô hiệu hóa" };
+    }
 
     const readerService = new ReaderService(MongoDB.client);
     const total = await readerService.count(filter);
@@ -105,6 +113,7 @@ exports.update = async (req, res, next) => {
       "Phai",
       "DiaChi",
       "DienThoai",
+      "TrangThai",
     ];
     const updateData = { avatar: avatarPath };
 

@@ -18,6 +18,7 @@ class BookService {
       BiaSach: payload.BiaSach,
       LuotXem: payload.LuotXem,
       TheLoai: payload.TheLoai,
+      TrangThai: payload.TrangThai,
     };
     Object.keys(book).forEach(
       // Duyệt qua tất cả các khóa trong đối tượng book

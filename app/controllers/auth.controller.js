@@ -11,6 +11,10 @@ exports.handleGoogleCallback = async (req, res) => {
     req.user.createdAt = new Date();
     const readerService = new ReaderService(req.app.locals.dbClient);
     const user = await readerService.createOrFindByGoogle(req.user);
+    if (user.TrangThai === "Vô hiệu hóa") {
+      // Redirect về client kèm query thông báo lỗi
+      return res.redirect(`${process.env.CLIENT_URL}/login?error=vohieuhoa`);
+    }
 
     const token = jwt.sign(
       {
@@ -142,6 +146,9 @@ exports.login = async (req, res, next) => {
       }
 
       const readerUser = readers[0];
+      if (readerUser.TrangThai === "Vô hiệu hóa") {
+        return next(new ApiError(403, "Tài khoản của bạn đã bị vô hiệu hóa"));
+      }
       const isMatch = await bcrypt.compare(MatKhau, readerUser.MatKhau);
 
       if (!isMatch) {

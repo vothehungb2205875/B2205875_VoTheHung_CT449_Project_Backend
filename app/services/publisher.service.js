@@ -24,9 +24,12 @@ class PublisherService {
     return result;
   }
 
-  async find(filter) {
-    const cursor = await this.collection.find(filter);
-    return await cursor.toArray();
+  async count(filter) {
+    return await this.collection.countDocuments(filter);
+  }
+
+  async findWithPagination(filter, skip, limit) {
+    return await this.collection.find(filter).skip(skip).limit(limit).toArray();
   }
 
   async findById(id) {
@@ -55,6 +58,10 @@ class PublisherService {
   async deleteAll() {
     const result = await this.collection.deleteMany({});
     return result.deletedCount;
+  }
+
+  async findByMaNXB(maNXB) {
+    return await this.collection.findOne({ MaNXB: maNXB });
   }
 }
 

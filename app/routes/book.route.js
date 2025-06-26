@@ -1,7 +1,6 @@
 const express = require("express");
 const books = require("../controllers/book.controller.js");
 const uploadBookCover = require("../middlewares/uploadBookCover");
-const deleteBookCover = require("../middlewares/deleteBookCover");
 const isStaff = require("../middlewares/isStaff");
 const {
   validateCreateBook,
@@ -41,7 +40,7 @@ router.put(
 );
 
 // Xoá sách theo ID (chỉ staff)
-router.delete("/:id", isStaff, deleteBookCover, books.delete);
+router.delete("/:id", isStaff, books.delete);
 
 // Xoá tất cả sách (chỉ staff)
 router.delete("/", isStaff, books.deleteAll);

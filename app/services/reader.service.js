@@ -16,6 +16,7 @@ class ReaderService {
       DiaChi: payload.DiaChi,
       DienThoai: payload.DienThoai,
       createdAt: new Date(),
+      TrangThai: payload.TrangThai,
 
       // Đăng nhập truyền thống
       MatKhau: payload.MatKhau,

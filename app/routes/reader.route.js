@@ -1,6 +1,5 @@
 const express = require("express");
 const readers = require("../controllers/reader.controller.js");
-const deleteReaderAvatar = require("../middlewares/deleteReaderCover");
 const uploadAvatar = require("../middlewares/uploadAvatarCover");
 const { validateUpdateProfile } = require("../validators/reader.validator");
 const { handleValidationErrors } = require("../middlewares/validate");
@@ -35,7 +34,7 @@ router.put(
 );
 
 // Route: Xoá bạn đọc theo ID
-router.delete("/:id", deleteReaderAvatar, isStaff, readers.delete);
+router.delete("/:id", isStaff, readers.delete);
 
 // Tìm theo mã
 router.get("/ma/:MaDocGia", readers.findByMa);

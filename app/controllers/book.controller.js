@@ -69,28 +69,33 @@ exports.create = async (req, res, next) => {
 
 exports.findAll = async (req, res, next) => {
   try {
-    const { q, genre, page = 1, limit = 12 } = req.query;
+    const { q, genre, TrangThai, page = 1, limit = 12 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    // Tạo filter
     let filter = {};
-    if (q && genre) {
-      filter = {
-        TheLoai: genre,
-        TenSach: { $regex: escapeRegex(q), $options: "i" },
-      };
-    } else if (q) {
+
+    // Lọc theo trạng thái
+    if (TrangThai === "Đã xóa") {
+      filter.TrangThai = "Đã xóa";
+    } else {
+      filter.TrangThai = { $ne: "Đã xóa" };
+    }
+
+    // Lọc theo tên
+    if (q) {
       filter.TenSach = { $regex: escapeRegex(q), $options: "i" };
-    } else if (genre) {
+    }
+
+    // Lọc theo thể loại
+    if (genre) {
       filter.TheLoai = genre;
     }
 
-    // Gọi Service
     const bookService = new BookService(MongoDB.client);
-    const total = await bookService.count(filter); // tổng số kết quả
-    const data = await bookService.find(filter, skip, parseInt(limit)); // dữ liệu phân trang
+    const total = await bookService.count(filter);
+    const data = await bookService.find(filter, skip, parseInt(limit));
 
     res.send({ data, total });
   } catch (err) {
@@ -149,6 +154,7 @@ exports.update = async (req, res, next) => {
       "DonGia",
       "SoQuyen",
       "NamXuatBan",
+      "TrangThai",
     ];
     updateData = allowedFields.reduce((obj, key) => {
       if (updateData[key] !== undefined) obj[key] = updateData[key];
@@ -181,15 +187,20 @@ exports.update = async (req, res, next) => {
 exports.delete = async (req, res, next) => {
   try {
     const bookService = new BookService(MongoDB.client);
-    const document = await bookService.delete(req.params.id);
+    const document = await bookService.findById(req.params.id);
+
     if (!document) {
       return next(
         new ApiError(404, "Không tìm thấy sách với ID: " + req.params.id)
       );
     }
-    return res.send({ message: "Xoá thành công", document });
+
+    // Cập nhật trạng thái sách thành "Đã xóa"
+    await bookService.update(req.params.id, { TrangThai: "Đã xóa" });
+
+    return res.send({ message: "Đã đánh dấu là 'Đã xóa'", document });
   } catch (error) {
-    return next(new ApiError(500, "Lỗi khi xoá sách với ID: " + req.params.id));
+    return next(new ApiError(500, "Lỗi khi cập nhật trạng thái sách"));
   }
 };
 
