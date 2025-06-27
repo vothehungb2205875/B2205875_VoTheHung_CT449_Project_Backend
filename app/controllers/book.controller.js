@@ -69,7 +69,7 @@ exports.create = async (req, res, next) => {
 
 exports.findAll = async (req, res, next) => {
   try {
-    const { q, genre, TrangThai, page = 1, limit = 12 } = req.query;
+    const { q, genre, nxb, year, TrangThai, page = 1, limit = 12 } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
     const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -91,6 +91,16 @@ exports.findAll = async (req, res, next) => {
     // Lọc theo thể loại
     if (genre) {
       filter.TheLoai = genre;
+    }
+
+    // Lọc theo Nhà xuất bản
+    if (nxb) {
+      filter.MaNXB = nxb;
+    }
+
+    // Lọc theo Năm xuất bản
+    if (year) {
+      filter.NamXuatBan = parseInt(year);
     }
 
     const bookService = new BookService(MongoDB.client);
@@ -213,5 +223,25 @@ exports.deleteAll = async (req, res, next) => {
     });
   } catch (error) {
     return next(new ApiError(500, "Lỗi khi xoá tất cả sách"));
+  }
+};
+
+exports.getFilters = async (req, res, next) => {
+  try {
+    const bookService = new BookService(MongoDB.client);
+
+    // Lấy tất cả sách (chỉ cần các trường liên quan)
+    const books = await bookService.find({}, 0, 10000); // hoặc dùng projection nếu bạn tối ưu sau
+
+    // Lọc ra danh sách duy nhất
+    const genres = [
+      ...new Set(books.map((book) => book.TheLoai).filter(Boolean)),
+    ];
+    const nxbs = [...new Set(books.map((book) => book.MaNXB).filter(Boolean))];
+
+    res.send({ genres, nxbs });
+  } catch (err) {
+    console.error("Lỗi khi lấy bộ lọc:", err);
+    return next(new ApiError(500, "Không thể lấy dữ liệu bộ lọc"));
   }
 };

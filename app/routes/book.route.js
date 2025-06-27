@@ -23,6 +23,9 @@ router.post(
 // Lấy tất cả sách
 router.get("/", books.findAll);
 
+// Lấy tất cả loại sách, nxb
+router.get("/filters", books.getFilters);
+
 // Lấy sách tiêu biểu
 router.get("/top", books.findTopViewed);
 
