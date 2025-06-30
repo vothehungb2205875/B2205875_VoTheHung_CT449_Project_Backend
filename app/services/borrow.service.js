@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 
 class BorrowService {
   constructor(client) {
-    this.collection = client.db().collection("theodoimuonsach");
+    this.collection = client.db().collection("borrow");
   }
 
   extractBorrowData(payload) {
@@ -104,12 +104,25 @@ class BorrowService {
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 1);
 
-    return await this.collection.countDocuments({
+    const soLuotMuon = await this.collection.countDocuments({
       NgayMuon: {
         $gte: start,
         $lt: end,
       },
     });
+
+    const soLuotQuaHan = await this.collection.countDocuments({
+      NgayMuon: {
+        $gte: start,
+        $lt: end,
+      },
+      TrangThai: "Quá hạn",
+    });
+
+    return {
+      soLuotMuon,
+      soLuotQuaHan,
+    };
   }
 }
 

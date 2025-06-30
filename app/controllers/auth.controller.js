@@ -168,6 +168,7 @@ exports.login = async (req, res, next) => {
         avatar: user.avatar,
         MaDocGia: user.MaDocGia,
         role,
+        ChucVu: user.ChucVu || null,
       },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }

@@ -10,10 +10,12 @@ class StaffService {
       MSNV: payload.MSNV,
       HoTenNV: payload.HoTenNV,
       Password: payload.Password,
-      Chucvu: payload.Chucvu,
-      Diachi: payload.Diachi,
+      ChucVu: payload.ChucVu,
+      DiaChi: payload.DiaChi,
       SoDienThoai: payload.SoDienThoai,
       email: payload.email,
+      TrangThai: payload.TrangThai,
+      createdAt: new Date(),
     };
 
     Object.keys(staff).forEach(
@@ -28,9 +30,12 @@ class StaffService {
     return result;
   }
 
-  async find(filter) {
-    const cursor = await this.collection.find(filter);
-    return await cursor.toArray();
+  async count(filter = {}) {
+    return await this.collection.countDocuments(filter);
+  }
+
+  async find(filter = {}, skip = 0, limit = 5) {
+    return await this.collection.find(filter).skip(skip).limit(limit).toArray();
   }
 
   async findById(id) {
@@ -50,10 +55,9 @@ class StaffService {
   }
 
   async delete(id) {
-    const result = await this.collection.findOneAndDelete({
+    return await this.collection.findOneAndDelete({
       _id: ObjectId.isValid(id) ? new ObjectId(id) : null,
     });
-    return result;
   }
 
   async deleteAll() {

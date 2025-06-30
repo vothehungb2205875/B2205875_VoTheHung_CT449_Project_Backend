@@ -9,21 +9,21 @@ const isStaff = require("../middlewares/isStaff");
 const router = express.Router();
 
 // Route: Thêm bạn đọc mới
-router.post("/", readers.create);
+router.post("/", readers.create); // Public – bạn đọc có thể tự đăng ký
 
-// Route: Lấy tất cả bạn đọc
-router.get("/", readers.findAll);
+// Route: Lấy tất cả bạn đọc (chỉ staff được xem toàn bộ)
+router.get("/", isStaff, readers.findAll);
 
-// Route: Thống kê
+// Route: Thống kê – chỉ staff
 router.get("/statistic", readers.statistic);
 
-// Route: Xoá tất cả bạn đọc
-router.delete("/", readers.deleteAll);
+// Route: Xoá tất cả bạn đọc – chỉ staff
+router.delete("/", isStaff, readers.deleteAll);
 
-// Route: Lấy 1 bạn đọc theo ID
-router.get("/:id", readers.findOne);
+// Route: Lấy 1 bạn đọc theo ID – yêu cầu đăng nhập (độc giả hoặc nhân viên)
+router.get("/:id", verifyToken, readers.findOne);
 
-// Route: Cập nhật bạn đọc theo ID
+// Route: Cập nhật bạn đọc theo ID – yêu cầu đăng nhập
 router.put(
   "/:id",
   verifyToken,
@@ -33,11 +33,10 @@ router.put(
   readers.update
 );
 
-// Route: Xoá bạn đọc theo ID
+// Route: Xoá 1 bạn đọc – chỉ staff
 router.delete("/:id", isStaff, readers.delete);
 
-// Tìm theo mã
-router.get("/ma/:MaDocGia", readers.findByMa);
+// Route: Tìm độc giả theo mã – chỉ staff
+router.get("/ma/:MaDocGia", isStaff, readers.findByMa);
 
-// Xuất router để dùng trong app chính
 module.exports = router;

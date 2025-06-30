@@ -261,9 +261,12 @@ exports.statistic = async (req, res, next) => {
     const month = parseInt(req.query.month) || today.getMonth() + 1;
     const year = parseInt(req.query.year) || today.getFullYear();
 
-    const count = await borrowService.getStatistic(month, year);
+    const { soLuotMuon, soLuotQuaHan } = await borrowService.getStatistic(
+      month,
+      year
+    );
 
-    res.json({ month, year, count });
+    res.json({ month, year, soLuotMuon, soLuotQuaHan });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Lỗi khi thống kê lượt mượn" });

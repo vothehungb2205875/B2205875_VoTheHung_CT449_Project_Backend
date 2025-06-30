@@ -1,25 +1,37 @@
 const express = require("express");
 const staffs = require("../controllers/staff.controller.js");
+const verifyStaff = require("../middlewares/isStaff");
+const requireManager = require("../middlewares/requireManager");
+const {
+  validateCreateStaff,
+  validateUpdateStaff,
+} = require("../validators/staff.validator");
+const { handleValidationErrors } = require("../middlewares/validate");
 
 const router = express.Router();
 
-// Route: Thêm nhân viên mới
-router.post("/", staffs.create);
+router.use(verifyStaff);
 
-// Route: Lấy tất cả nhân viên
 router.get("/", staffs.findAll);
-
-// Route: Lấy 1 nhân viên theo ID
 router.get("/:id", staffs.findOne);
 
-// Route: Cập nhật nhân viên theo ID
-router.put("/:id", staffs.update);
+router.post(
+  "/",
+  requireManager,
+  validateCreateStaff,
+  handleValidationErrors,
+  staffs.create
+);
 
-// Route: Xoá nhân viên theo ID
-router.delete("/:id", staffs.delete);
+router.put(
+  "/:id",
+  requireManager,
+  validateUpdateStaff,
+  handleValidationErrors,
+  staffs.update
+);
 
-// Route: Xoá tất cả nhân viên
-router.delete("/", staffs.deleteAll);
+router.delete("/:id", requireManager, staffs.delete);
+router.delete("/", requireManager, staffs.deleteAll);
 
-// Xuất router để dùng trong app chính
 module.exports = router;

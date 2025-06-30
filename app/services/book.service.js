@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb"); // Import ObjectId từ mongodb để l
 
 class BookService {
   constructor(client) {
-    this.collection = client.db().collection("books"); // Khởi tạo collection "books" từ client MongoDB
+    this.collection = client.db().collection("book"); // Khởi tạo collection "books" từ client MongoDB
   }
 
   extractBookData(payload) {
