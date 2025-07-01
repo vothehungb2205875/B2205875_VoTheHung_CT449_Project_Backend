@@ -1,12 +1,29 @@
 const MongoDB = require("../utils/mongodb.util");
 const StaffService = require("../services/staff.service");
+const ReaderService = require("../services/reader.service");
 const ApiError = require("../api-error");
 
 exports.create = async (req, res, next) => {
   try {
     const staffService = new StaffService(MongoDB.client);
+    const readerService = new ReaderService(MongoDB.client);
 
-    // Tạo mã nhân viên: NV + 3 số ngẫu nhiên, đảm bảo không trùng
+    // Bắt buộc có email
+    if (!req.body?.email) {
+      return next(new ApiError(400, "Email không được rỗng"));
+    }
+
+    const normalizedEmail = req.body.email.trim().toLowerCase();
+
+    // Kiểm tra email đã tồn tại ở Reader hoặc Staff
+    const readerExists = await readerService.find({ email: normalizedEmail });
+    const staffExists = await staffService.find({ email: normalizedEmail });
+
+    if (readerExists.length > 0 || staffExists.length > 0) {
+      return next(new ApiError(409, "Email đã tồn tại trong hệ thống"));
+    }
+
+    // Tạo mã nhân viên ngẫu nhiên, không trùng
     let randomCode;
     let existing;
     do {
@@ -16,13 +33,15 @@ exports.create = async (req, res, next) => {
 
     const staffData = {
       ...req.body,
+      email: normalizedEmail,
       MSNV: randomCode,
-      TrangThai: req.body.TrangThai || "Hoạt động", // Mặc định trạng thái
+      TrangThai: req.body.TrangThai || "Hoạt động",
     };
 
     const document = await staffService.create(staffData);
     res.send(document);
   } catch (err) {
+    console.error("Lỗi khi tạo nhân viên:", err);
     next(new ApiError(500, "Lỗi khi tạo nhân viên"));
   }
 };

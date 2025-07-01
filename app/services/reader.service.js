@@ -5,9 +5,8 @@ class ReaderService {
     this.collection = client.db().collection("reader");
   }
 
-  extractReaderData(payload) {
+  extractReaderData(payload, isCreate = false) {
     const reader = {
-      // Dữ liệu chung (nội bộ)
       MaDocGia: payload.MaDocGia,
       HoLot: payload.HoLot,
       Ten: payload.Ten,
@@ -15,21 +14,20 @@ class ReaderService {
       Phai: payload.Phai,
       DiaChi: payload.DiaChi,
       DienThoai: payload.DienThoai,
-      createdAt: new Date(),
       TrangThai: payload.TrangThai,
-
-      // Đăng nhập truyền thống
       MatKhau: payload.MatKhau,
-
-      // Đăng nhập Google
       googleId: payload.googleId,
       email: payload.email,
       name: payload.name,
       avatar: payload.avatar,
-      provider: payload.provider || "local", // "google" hoặc "local"
+      provider: payload.provider || "local",
     };
 
-    // Xoá trường không có giá trị
+    // Chỉ thêm createdAt khi tạo mới
+    if (isCreate) {
+      reader.createdAt = new Date();
+    }
+
     Object.keys(reader).forEach(
       (key) => reader[key] === undefined && delete reader[key]
     );

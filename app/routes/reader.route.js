@@ -12,7 +12,7 @@ const router = express.Router();
 router.post("/", readers.create); // Public – bạn đọc có thể tự đăng ký
 
 // Route: Lấy tất cả bạn đọc (chỉ staff được xem toàn bộ)
-router.get("/", isStaff, readers.findAll);
+router.get("/", readers.findAll);
 
 // Route: Thống kê – chỉ staff
 router.get("/statistic", readers.statistic);

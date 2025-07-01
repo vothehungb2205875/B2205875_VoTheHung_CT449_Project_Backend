@@ -87,7 +87,7 @@ class BorrowService {
         { $match: { MaDocGia: maDocGia } },
         {
           $lookup: {
-            from: "books",
+            from: "book",
             localField: "MaSach",
             foreignField: "MaSach",
             as: "bookInfo",

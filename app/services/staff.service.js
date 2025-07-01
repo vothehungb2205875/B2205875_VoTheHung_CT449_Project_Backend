@@ -5,7 +5,7 @@ class StaffService {
     this.collection = client.db().collection("staff");
   }
 
-  extractStaffData(payload) {
+  extractStaffData(payload, isCreate = false) {
     const staff = {
       MSNV: payload.MSNV,
       HoTenNV: payload.HoTenNV,
@@ -15,12 +15,16 @@ class StaffService {
       SoDienThoai: payload.SoDienThoai,
       email: payload.email,
       TrangThai: payload.TrangThai,
-      createdAt: new Date(),
     };
+
+    if (isCreate) {
+      staff.createdAt = new Date();
+    }
 
     Object.keys(staff).forEach(
       (key) => staff[key] === undefined && delete staff[key]
     );
+
     return staff;
   }
 

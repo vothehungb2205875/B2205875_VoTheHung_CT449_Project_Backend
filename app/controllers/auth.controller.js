@@ -1,3 +1,4 @@
+const MongoDB = require("../utils/mongodb.util");
 const jwt = require("jsonwebtoken");
 const ReaderService = require("../services/reader.service");
 const bcrypt = require("bcryptjs");
@@ -9,7 +10,7 @@ exports.handleGoogleCallback = async (req, res) => {
     console.log("req.user:", req.user);
     req.user.MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
     req.user.createdAt = new Date();
-    const readerService = new ReaderService(req.app.locals.dbClient);
+    const readerService = new ReaderService(MongoDB.client);
     const user = await readerService.createOrFindByGoogle(req.user);
     if (user.TrangThai === "Vô hiệu hóa") {
       // Redirect về client kèm query thông báo lỗi
@@ -64,11 +65,12 @@ exports.register = async (req, res, next) => {
   }
 
   try {
-    const readerService = new ReaderService(req.app.locals.dbClient);
-
+    const readerService = new ReaderService(MongoDB.client);
+    const staffService = new StaffService(MongoDB.client);
     // Kiểm tra email đã tồn tại chưa
-    const existed = await readerService.find({ email });
-    if (existed.length > 0) {
+    const existedReader = await readerService.find({ email });
+    const existedStaff = await staffService.find({ email });
+    if (existedReader.length > 0 || existedStaff.length > 0) {
       return next(new ApiError(409, "Email đã tồn tại"));
     }
 
@@ -120,8 +122,8 @@ exports.login = async (req, res, next) => {
   }
 
   try {
-    const readerService = new ReaderService(req.app.locals.dbClient);
-    const staffService = new StaffService(req.app.locals.dbClient);
+    const readerService = new ReaderService(MongoDB.client);
+    const staffService = new StaffService(MongoDB.client);
 
     let user = null;
     let role = null;

@@ -6,23 +6,26 @@ class BookService {
   }
 
   extractBookData(payload) {
-    // Hàm để trích xuất dữ liệu sách từ payload
     const book = {
       MaSach: payload.MaSach,
       TenSach: payload.TenSach,
-      DonGia: payload.DonGia,
-      SoQuyen: payload.SoQuyen,
-      NamXuatBan: payload.NamXuatBan,
+      DonGia: payload.DonGia !== undefined ? Number(payload.DonGia) : undefined,
+      SoQuyen:
+        payload.SoQuyen !== undefined ? Number(payload.SoQuyen) : undefined,
+      NamXuatBan:
+        payload.NamXuatBan !== undefined
+          ? Number(payload.NamXuatBan)
+          : undefined,
       MaNXB: payload.MaNXB,
       TacGia: payload.TacGia,
       BiaSach: payload.BiaSach,
-      LuotXem: payload.LuotXem,
+      LuotXem: payload.LuotXem !== undefined ? Number(payload.LuotXem) : 0, // fallback mặc định
       TheLoai: payload.TheLoai,
       TrangThai: payload.TrangThai,
     };
+
     Object.keys(book).forEach(
-      // Duyệt qua tất cả các khóa trong đối tượng book
-      (key) => book[key] === undefined && delete book[key] // Nếu giá trị của khóa là undefined, xóa khóa đó khỏi đối tượng
+      (key) => book[key] === undefined && delete book[key]
     );
     return book;
   }

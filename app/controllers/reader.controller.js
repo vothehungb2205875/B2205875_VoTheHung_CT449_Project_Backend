@@ -1,10 +1,13 @@
 const MongoDB = require("../utils/mongodb.util");
 const ReaderService = require("../services/reader.service");
+const StaffService = require("../services/staff.service");
 const ApiError = require("../api-error");
 const fs = require("fs");
 const path = require("path");
 
 exports.create = async (req, res, next) => {
+  // không dùng vì chuyển sang xử lý ở auth
+
   if (!req.body?.MaDocGia) {
     return next(new ApiError(400, "Mã độc giả không được rỗng"));
   }
