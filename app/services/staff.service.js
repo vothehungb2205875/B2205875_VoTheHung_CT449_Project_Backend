@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 
 class StaffService {
   constructor(client) {
-    this.collection = client.db().collection("staff");
+    this.collection = client.db().collection("staffs");
   }
 
   extractStaffData(payload, isCreate = false) {

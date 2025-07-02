@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 
 class NotifyService {
   constructor(client) {
-    this.collection = client.db().collection("notification"); // Khởi tạo collection notification
+    this.collection = client.db().collection("notifications"); // Khởi tạo collection notification
   }
 
   extractNotifyData(payload) {

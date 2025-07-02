@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 
 class ReaderService {
   constructor(client) {
-    this.collection = client.db().collection("reader");
+    this.collection = client.db().collection("readers");
   }
 
   extractReaderData(payload, isCreate = false) {

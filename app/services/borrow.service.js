@@ -2,7 +2,7 @@ const { ObjectId } = require("mongodb");
 
 class BorrowService {
   constructor(client) {
-    this.collection = client.db().collection("borrow");
+    this.collection = client.db().collection("borrows");
   }
 
   extractBorrowData(payload) {
@@ -87,7 +87,7 @@ class BorrowService {
         { $match: { MaDocGia: maDocGia } },
         {
           $lookup: {
-            from: "book",
+            from: "books",
             localField: "MaSach",
             foreignField: "MaSach",
             as: "bookInfo",
@@ -116,13 +116,67 @@ class BorrowService {
         $gte: start,
         $lt: end,
       },
-      TrangThai: "Quá hạn",
+      TrangThai: "Quá hạn trả",
     });
 
     return {
       soLuotMuon,
       soLuotQuaHan,
     };
+  }
+
+  // Kiểm tra và cập nhật trạng thái quá hạn và quá hạn nhận
+  async checkAndUpdateOverdueBorrows() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const results = {
+      updatedOverdue: 0,
+      updatedOverdueRegister: 0,
+    };
+
+    // 1. Cập nhật "Quá hạn nhận": nếu đăng ký mượn quá 2 ngày mà chưa nhận
+    const pendingBorrows = await this.collection
+      .find({ TrangThai: "Đăng ký mượn" })
+      .toArray();
+
+    for (const item of pendingBorrows) {
+      if (!item.NgayMuon) continue;
+
+      const borrowDate = new Date(item.NgayMuon);
+      borrowDate.setHours(0, 0, 0, 0);
+      const diffDays = (today - borrowDate) / (1000 * 60 * 60 * 24);
+
+      if (diffDays > 2) {
+        await this.collection.updateOne(
+          { _id: item._id },
+          { $set: { TrangThai: "Quá hạn nhận" } }
+        );
+        results.updatedOverdueRegister++;
+      }
+    }
+
+    // 2. Cập nhật "Quá hạn": nếu đang mượn nhưng đã qua hạn trả
+    const activeBorrows = await this.collection
+      .find({ TrangThai: "Đang mượn" })
+      .toArray();
+
+    for (const item of activeBorrows) {
+      if (!item.NgayTra) continue;
+
+      const dueDate = new Date(item.NgayTra);
+      dueDate.setHours(0, 0, 0, 0);
+
+      if (dueDate < today) {
+        await this.collection.updateOne(
+          { _id: item._id },
+          { $set: { TrangThai: "Quá hạn trả" } }
+        );
+        results.updatedOverdue++;
+      }
+    }
+
+    return results;
   }
 }
 

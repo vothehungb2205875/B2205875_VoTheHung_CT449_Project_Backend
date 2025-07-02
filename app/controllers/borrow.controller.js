@@ -102,7 +102,7 @@ exports.create = async (req, res, next) => {
   }
 };
 
-// Lấy tất cả lượt mượn
+// Lấy tất cả lượt mượn (đã tích hợp cập nhật trạng thái)
 exports.findAll = async (req, res, next) => {
   try {
     const { q, page = 1, limit = 5, startDate, endDate, status } = req.query;
@@ -136,6 +136,10 @@ exports.findAll = async (req, res, next) => {
     }
 
     const borrowService = new BorrowService(MongoDB.client);
+
+    // Gọi kiểm tra và cập nhật trạng thái trước khi lấy dữ liệu
+    await borrowService.checkAndUpdateOverdueBorrows();
+
     const total = await borrowService.count(filter);
     const data = await borrowService.find(filter, skip, parseInt(limit));
 
@@ -162,24 +166,28 @@ exports.findOne = async (req, res, next) => {
   }
 };
 
-// Cập nhật lượt mượn (ví dụ ngày trả)
+// Cập nhật lượt mượn
 exports.update = async (req, res, next) => {
   try {
     const borrowService = new BorrowService(MongoDB.client);
     const bookService = new BookService(MongoDB.client);
 
-    // Lấy bản ghi cũ để biết sách và trạng thái ban đầu
     const current = await borrowService.findById(req.params.id);
     if (!current) {
       return next(new ApiError(404, "Không tìm thấy lượt mượn để cập nhật"));
     }
 
+    const oldStatus = current.TrangThai;
     const newStatus = req.body.TrangThai;
-    const wasBorrowed = current.TrangThai === "Đang mượn";
-    const willReturn = newStatus === "Đã trả" || newStatus === "Đã hủy";
 
-    // Nếu đang mượn và chuyển sang đã trả hoặc đã hủy -> tăng lại số lượng sách
-    if (wasBorrowed && willReturn) {
+    // Chỉ tăng lại số lượng sách trong 4 trường hợp hợp lệ
+    const shouldIncreaseQuantity =
+      (["Đăng ký mượn", "Quá hạn nhận"].includes(oldStatus) &&
+        newStatus === "Đã hủy") ||
+      (["Đang mượn", "Quá hạn trả"].includes(oldStatus) &&
+        newStatus === "Đã trả");
+
+    if (shouldIncreaseQuantity) {
       const book = await bookService.findByMaSach(current.MaSach);
       if (book) {
         await bookService.update(book._id, {
@@ -188,12 +196,11 @@ exports.update = async (req, res, next) => {
       }
     }
 
-    // Thêm ngày trả thực tế nếu trạng thái là "Đã trả"
-    if (req.body.TrangThai === "Đã trả") {
+    // Ghi ngày trả thực tế nếu là "Đã trả"
+    if (newStatus === "Đã trả") {
       req.body.NgayTraTT = new Date();
     }
 
-    // Cập nhật lượt mượn
     const document = await borrowService.update(req.params.id, req.body);
 
     return res.send({ message: "Cập nhật thành công", document });
