@@ -104,6 +104,7 @@ class BorrowService {
     const start = new Date(year, month - 1, 1);
     const end = new Date(year, month, 1);
 
+    // Tổng lượt mượn trong tháng
     const soLuotMuon = await this.collection.countDocuments({
       NgayMuon: {
         $gte: start,
@@ -111,12 +112,24 @@ class BorrowService {
       },
     });
 
+    // Số lượt quá hạn: có trạng thái "Quá hạn trả" hoặc NgayTraTT > NgayTra
     const soLuotQuaHan = await this.collection.countDocuments({
       NgayMuon: {
         $gte: start,
         $lt: end,
       },
-      TrangThai: "Quá hạn trả",
+      $or: [
+        { TrangThai: "Quá hạn trả" },
+        {
+          $expr: {
+            $and: [
+              { $gt: ["$NgayTraTT", "$NgayTra"] },
+              { $ne: ["$NgayTraTT", null] },
+              { $ne: ["$NgayTra", null] },
+            ],
+          },
+        },
+      ],
     });
 
     return {
