@@ -102,24 +102,44 @@ exports.create = async (req, res, next) => {
   }
 };
 
-// Lấy tất cả lượt mượn (đã tích hợp cập nhật trạng thái)
 exports.findAll = async (req, res, next) => {
   try {
     const { q, page = 1, limit = 5, startDate, endDate, status } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const regex = q
-      ? new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i")
-      : null;
 
     let filter = {};
+    const borrowService = new BorrowService(MongoDB.client);
+    const readerService = new ReaderService(MongoDB.client);
 
-    // Tìm kiếm theo từ khóa q
+    // Cập nhật trạng thái quá hạn trước khi lấy dữ liệu
+    await borrowService.checkAndUpdateOverdueBorrows();
+
+    // Xử lý tìm kiếm theo q
     if (q) {
-      filter.$or = [
-        { MaDocGia: regex },
-        { MaSach: regex },
-        { TrangThai: regex },
-      ];
+      const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+
+      // Nếu là chuỗi số (giống số điện thoại)
+      const isPhone = /^[0-9]{9,11}$/.test(q);
+      if (isPhone) {
+        // Tìm độc giả theo số điện thoại
+        const readers = await readerService.collection
+          .find({ DienThoai: regex })
+          .toArray();
+
+        if (readers.length > 0) {
+          const maDocGiaList = readers.map((r) => r.MaDocGia);
+          filter.MaDocGia = { $in: maDocGiaList };
+        } else {
+          return res.send({ data: [], total: 0 }); // Không tìm thấy độc giả
+        }
+      } else {
+        // Tìm theo mã độc giả, mã sách, trạng thái
+        filter.$or = [
+          { MaDocGia: regex },
+          { MaSach: regex },
+          { TrangThai: regex },
+        ];
+      }
     }
 
     // Lọc theo khoảng thời gian mượn
@@ -134,11 +154,6 @@ exports.findAll = async (req, res, next) => {
     if (status) {
       filter.TrangThai = status;
     }
-
-    const borrowService = new BorrowService(MongoDB.client);
-
-    // Gọi kiểm tra và cập nhật trạng thái trước khi lấy dữ liệu
-    await borrowService.checkAndUpdateOverdueBorrows();
 
     const total = await borrowService.count(filter);
     const data = await borrowService.find(filter, skip, parseInt(limit));

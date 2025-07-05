@@ -83,9 +83,10 @@ exports.findAll = async (req, res, next) => {
       filter.TrangThai = { $ne: "Đã xóa" };
     }
 
-    // Lọc theo tên
+    // Lọc theo tên, mã
     if (q) {
-      filter.TenSach = { $regex: escapeRegex(q), $options: "i" };
+      const regex = { $regex: escapeRegex(q), $options: "i" };
+      filter.$or = [{ TenSach: regex }, { MaSach: regex }];
     }
 
     // Lọc theo thể loại

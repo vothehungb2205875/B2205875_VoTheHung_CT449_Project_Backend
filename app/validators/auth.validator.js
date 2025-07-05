@@ -39,6 +39,6 @@ exports.validateRegister = [
   body("DiaChi").notEmpty().withMessage("Địa chỉ là bắt buộc."),
 
   body("DienThoai")
-    .matches(/^[0-9]{9,11}$/)
-    .withMessage("Số điện thoại không hợp lệ (chỉ 9–11 số)."),
+    .matches(/^[0-9]{10,11}$/)
+    .withMessage("Số điện thoại không hợp lệ (chỉ 10–11 số)."),
 ];
