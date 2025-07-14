@@ -29,6 +29,9 @@ router.get("/filters", books.getFilters);
 // Lấy sách tiêu biểu
 router.get("/top", books.findTopViewed);
 
+// Lấy sách theo mã sách (MaSach)
+router.get("/ma/:maSach", books.findByMaSach);
+
 // Lấy một sách theo ID
 router.get("/:id", books.findOne);
 

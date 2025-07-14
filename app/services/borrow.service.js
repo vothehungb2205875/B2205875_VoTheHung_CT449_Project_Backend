@@ -13,6 +13,7 @@ class BorrowService {
       NgayTra: payload.NgayTra ? new Date(payload.NgayTra) : undefined,
       NgayTraTT: payload.NgayTraTT,
       TrangThai: payload.TrangThai,
+      GhiChu: payload.GhiChu,
     };
 
     Object.keys(borrow).forEach(
@@ -171,7 +172,7 @@ class BorrowService {
 
     // 2. Cập nhật "Quá hạn": nếu đang mượn nhưng đã qua hạn trả
     const activeBorrows = await this.collection
-      .find({ TrangThai: "Đang mượn" })
+      .find({ TrangThai: { $in: ["Đang mượn", "Quá hạn trả"] } })
       .toArray();
 
     for (const item of activeBorrows) {
@@ -181,10 +182,19 @@ class BorrowService {
       dueDate.setHours(0, 0, 0, 0);
 
       if (dueDate < today) {
+        const daysLate = Math.ceil((today - dueDate) / (1000 * 60 * 60 * 24));
+        const fine = daysLate * 5000;
+
         await this.collection.updateOne(
           { _id: item._id },
-          { $set: { TrangThai: "Quá hạn trả" } }
+          {
+            $set: {
+              TrangThai: "Quá hạn trả",
+              GhiChu: `Trễ ${daysLate} ngày: 5000đ/ngày. Phạt: ${fine.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}đ`,
+            },
+          }
         );
+
         results.updatedOverdue++;
       }
     }

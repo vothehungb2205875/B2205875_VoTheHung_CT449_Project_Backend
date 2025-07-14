@@ -246,3 +246,19 @@ exports.getFilters = async (req, res, next) => {
     return next(new ApiError(500, "Không thể lấy dữ liệu bộ lọc"));
   }
 };
+
+exports.findByMaSach = async (req, res, next) => {
+  try {
+    const maSach = req.params.maSach;
+    const bookService = new BookService(MongoDB.client);
+    const book = await bookService.findByMaSach(maSach);
+
+    if (!book) {
+      return next(new ApiError(404, `Không tìm thấy sách với mã: ${maSach}`));
+    }
+
+    return res.send(book);
+  } catch (error) {
+    return next(new ApiError(500, "Lỗi khi truy xuất sách theo mã"));
+  }
+};
