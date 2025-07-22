@@ -1,5 +1,5 @@
 module.exports = (req, res, next) => {
-  // Giả sử đã qua middleware xác thực staff trước đó
+  // Giả sử đã qua middleware xác thực isStaff trước đó
   if (req.user?.ChucVu !== "Quản lý") {
     return res
       .status(403)

@@ -69,8 +69,10 @@ exports.create = async (req, res, next) => {
 
 exports.findAll = async (req, res, next) => {
   try {
+    // page, limit nếu không truyền vào sẽ mặc định là 1 và 12
     const { q, genre, nxb, year, TrangThai, page = 1, limit = 12 } = req.query;
-    const skip = (parseInt(page) - 1) * parseInt(limit);
+    // Bỏ qua skip bản ghi đầu tiên
+    const skip = (parseInt(page) - 1) * parseInt(limit); // (1 - 1) *12 = 0, (2 - 1) * 12 = 12, v.v.
 
     const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -105,9 +107,11 @@ exports.findAll = async (req, res, next) => {
     }
 
     const bookService = new BookService(MongoDB.client);
+    // Đếm tổng số sách theo điều kiện
     const total = await bookService.count(filter);
+    // Tìm sách theo điều kiện, phân trang
     const data = await bookService.find(filter, skip, parseInt(limit));
-
+    // Trả về object chứ mảng data và total
     res.send({ data, total });
   } catch (err) {
     next(new ApiError(500, "Lỗi tìm sách"));

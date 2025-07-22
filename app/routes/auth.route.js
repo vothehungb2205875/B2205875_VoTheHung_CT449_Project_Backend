@@ -15,7 +15,9 @@ router.post(
   authController.register
 );
 
-// Bắt đầu đăng nhập Google
+// 1
+// Bắt đầu đăng nhập Google, vào giao diện chọn tài khoản
+// Sau đó sẽ chuyển hướng đến callback URL đã cấu hình trong Google Developer Console
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -24,20 +26,18 @@ router.get(
   })
 );
 
-// Callback sau khi xác thực từ Google
+// 2
+// Gọi middleware xác thực Google
+// Nếu thành công, sẽ chuyển tiếp đến authController.handleGoogleCallback
 router.get(
   "/google/callback",
   (req, res, next) => {
     passport.authenticate("google", { session: false }, (err, user) => {
-      console.log("user:", user);
-      console.log("err:", err);
-
       if (err || !user) {
         return res
           .status(401)
           .json({ message: "Đăng nhập thất bại", error: err });
       }
-
       req.user = user;
       next(); // Chuyển tiếp đến middleware tiếp theo
     })(req, res, next);

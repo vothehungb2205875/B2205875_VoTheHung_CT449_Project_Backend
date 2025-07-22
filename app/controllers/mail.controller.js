@@ -2,7 +2,6 @@ const MailService = require("../services/mail.service");
 
 exports.sendReminder = async (req, res) => {
   const { to, readerName, bookCode, dueDate } = req.body;
-
   try {
     const result = await MailService.sendMail({
       to,

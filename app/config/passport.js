@@ -2,6 +2,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 require("dotenv").config();
 
+// 3
 passport.use(
   // Cấu hình chiến lược Google OAuth 2.0
   new GoogleStrategy(
@@ -10,9 +11,8 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
     },
+    // Verify callback, dùng code gửi từ Google để lấy thông tin người dùng
     async (accessToken, refreshToken, profile, done) => {
-      console.log("Google Profile:", profile);
-
       try {
         const user = {
           googleId: profile.id,
@@ -22,7 +22,6 @@ passport.use(
           provider: "google",
         };
 
-        console.log("Created user:", user);
         return done(null, user);
       } catch (err) {
         console.error("Error in Google Strategy:", err);

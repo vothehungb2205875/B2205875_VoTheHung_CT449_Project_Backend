@@ -37,14 +37,14 @@ class ReaderService {
 
   // Tạo mới người dùng nội bộ
   async create(payload) {
-    const reader = this.extractReaderData(payload);
+    const reader = this.extractReaderData(payload, true);
     const result = await this.collection.insertOne(reader);
     return result;
   }
 
   // Đăng nhập Google: tìm hoặc tạo người dùng
   async createOrFindByGoogle(payload) {
-    const reader = this.extractReaderData(payload);
+    const reader = this.extractReaderData(payload, true);
 
     // Kiểm tra xem người dùng đã tồn tại theo googleId hoặc email
     const existing = await this.collection.findOne({

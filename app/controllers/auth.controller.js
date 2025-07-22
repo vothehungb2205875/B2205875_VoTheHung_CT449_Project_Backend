@@ -5,11 +5,10 @@ const bcrypt = require("bcryptjs");
 const ApiError = require("../api-error");
 const StaffService = require("../services/staff.service");
 
+// 4
 exports.handleGoogleCallback = async (req, res) => {
   try {
-    console.log("req.user:", req.user);
     req.user.MaDocGia = "DG" + Date.now(); // Tự động sinh mã độc giả
-    req.user.createdAt = new Date();
     const readerService = new ReaderService(MongoDB.client);
     const user = await readerService.createOrFindByGoogle(req.user);
     if (user.TrangThai === "Vô hiệu hóa") {
@@ -100,7 +99,6 @@ exports.register = async (req, res, next) => {
       name: `${HoLot} ${Ten}`,
       provider: "local",
       avatar: avatarPath,
-      createdAt: new Date(),
     };
 
     const result = await readerService.create(payload);

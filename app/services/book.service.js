@@ -23,7 +23,7 @@ class BookService {
       TheLoai: payload.TheLoai,
       TrangThai: payload.TrangThai,
     };
-
+    // Xóa các thuộc tính có giá trị undefined
     Object.keys(book).forEach(
       (key) => book[key] === undefined && delete book[key]
     );
@@ -33,13 +33,16 @@ class BookService {
   async create(payload) {
     const book = this.extractBookData(payload);
     const result = await this.collection.insertOne(book);
-    return { _id: result.insertedId, ...book };
+    return { _id: result.insertedId, ...book }; // ...book để trả về các trường khác ngoài _id
   }
 
+  // Đếm số lượng sách theo điều kiện
   async count(filter = {}) {
     return await this.collection.countDocuments(filter);
   }
 
+  // Tìm kiếm sách theo điều kiện, phân trang
+  // skip, limit nếu không truyền vào sẽ mặc định là 0 và 12
   async find(filter = {}, skip = 0, limit = 12) {
     return await this.collection.find(filter).skip(skip).limit(limit).toArray();
   }
