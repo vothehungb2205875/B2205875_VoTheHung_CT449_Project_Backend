@@ -243,7 +243,7 @@ exports.getFilters = async (req, res, next) => {
       ...new Set(books.map((book) => book.TheLoai).filter(Boolean)),
     ];
     const nxbs = [...new Set(books.map((book) => book.MaNXB).filter(Boolean))];
-
+    // Trả về json chứa 2 mảng genres và nxbs
     res.send({ genres, nxbs });
   } catch (err) {
     console.error("Lỗi khi lấy bộ lọc:", err);
