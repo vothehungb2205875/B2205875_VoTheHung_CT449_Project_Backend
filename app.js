@@ -14,6 +14,7 @@ const staffsRouter = require("./app/routes/staff.route.js");
 const borrowRouter = require("./app/routes/borrow.route.js");
 const notifyRouter = require("./app/routes/notify.route.js");
 const mailRouter = require("./app/routes/mail.route");
+const chatbotRouter = require("./app/routes/chatbot.route.js");
 
 const ApiError = require("./app/api-error.js");
 
@@ -43,6 +44,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/borrows", borrowRouter);
 app.use("/api/notifications", notifyRouter);
 app.use("/api/mail", mailRouter);
+app.use("/api/chatbot", chatbotRouter);
 
 // Root route
 app.get("/", (req, res) => {

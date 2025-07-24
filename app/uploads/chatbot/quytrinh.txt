@@ -1,0 +1,34 @@
+QUY TRÌNH ĐĂNG KÝ MƯỢN SÁCH – HỆ THỐNG QUẢN LÝ THƯ VIỆN
+
+1. Đối tượng áp dụng:
+   - Sinh viên, giảng viên, và cán bộ trường có tài khoản thư viện hợp lệ.
+
+2. Điều kiện mượn sách:
+   - Tài khoản thư viện phải còn hiệu lực.
+   - Không có sách trễ hạn hoặc vi phạm đang xử lý.
+
+3. Quy trình đăng ký mượn:
+   Bước 1: Đăng nhập vào hệ thống thư viện tại https://CTLIB.ctu.edu.vn
+   Bước 2: Tìm kiếm sách cần mượn qua ô tìm kiếm (theo tên, tác giả, hoặc mã ISBN).
+   Bước 3: Nhấn nút "Đăng ký mượn" trên trang chi tiết sách.
+   Bước 4: Xác nhận thông tin mượn:
+       - Thời hạn mượn: tối đa 14 ngày.
+       - Số lượng: tối đa 3 quyển cùng lúc.
+   Bước 5: Nhận thông báo xác nhận qua email hoặc thông báo hệ thống.
+   Bước 6: Đến quầy thủ thư để nhận sách trong vòng 48 giờ kể từ lúc đăng ký.
+
+4. Gia hạn:
+   - Có thể gia hạn thêm 7 ngày nếu không có người khác đang đặt chỗ.
+   - Gia hạn được thực hiện qua tài khoản cá nhân trên hệ thống.
+
+5. Trả sách:
+   - Trả sách tại quầy hoặc qua máy trả tự động.
+   - Quá hạn sẽ bị phạt 5.000đ/ngày/quyển.
+
+6. Lưu ý:
+   - Không được làm hỏng, viết vào hoặc làm mất sách.
+   - Nếu mất sách, người mượn phải đền sách mới hoặc bồi thường theo quy định.
+
+Thông tin hỗ trợ:
+   - Email: thu_vien@truongabc.edu.vn
+   - Hotline: 028.1234.5678 (phòng thư viện)
